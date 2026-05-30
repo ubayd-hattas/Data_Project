@@ -3,6 +3,7 @@ import { DM_Sans, DM_Serif_Display, DM_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+import { Analytics } from '@vercel/analytics/react'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -35,6 +36,9 @@ export const metadata: Metadata = {
     description: 'Modern, accessible South African public data.',
     type: 'website',
   },
+  verification: {
+    google: '1e1a0b335f98cead',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -48,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Footer />
           </div>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )
