@@ -1,0 +1,106 @@
+{
+  "_meta": {
+    "source": "Statistics South Africa — Census 2022; General Household Survey (GHS)",
+    "source_url": "https://www.statssa.gov.za/?page_id=1854&PPN=P0318",
+    "update_frequency": "Census: decennial; GHS: annual",
+    "last_verified": "2025-05-01",
+    "notes": "Census 2022 gives the definitive snapshot. The General Household Survey (GHS P0318) updates service delivery indicators annually. Update by running: python scripts/update_housing.py"
+  },
+  "statistics": [
+    {
+      "id": "housing-access-piped-water",
+      "categoryId": "housing",
+      "title": "Access to Piped Water (In-dwelling)",
+      "value": "63.0%",
+      "rawValue": 63.0,
+      "unit": "%",
+      "change": 7.2,
+      "changeLabel": "since Census 2011",
+      "trend": "up",
+      "description": "Percentage of households with access to piped water inside their dwelling as per Census 2022. Rural provinces continue to lag significantly — Limpopo (38%) and Eastern Cape (42%) have the lowest access rates.",
+      "source": {
+        "name": "Statistics South Africa",
+        "shortName": "Stats SA",
+        "url": "https://www.statssa.gov.za/census/census_2022/census_2022_products/Census_2022_Statistical_release.pdf",
+        "publicationName": "Census 2022 Statistical Release",
+        "publicationDate": "2023-10-10"
+      },
+      "lastUpdated": "2023-10-10",
+      "series": [
+        {
+          "name": "Access to Piped Water (%)",
+          "unit": "%",
+          "data": [
+            { "label": "2001", "value": 42.3 },
+            { "label": "2011", "value": 55.8 },
+            { "label": "2022", "value": 63.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "housing-electricity",
+      "categoryId": "housing",
+      "title": "Households with Electricity",
+      "value": "91.2%",
+      "rawValue": 91.2,
+      "unit": "%",
+      "change": 3.6,
+      "changeLabel": "since Census 2011",
+      "trend": "up",
+      "description": "Percentage of households connected to the electrical grid as per Census 2022. Despite near-universal connectivity, load-shedding (scheduled power cuts) severely impacts effective access and remains a major economic drag.",
+      "source": {
+        "name": "Statistics South Africa",
+        "shortName": "Stats SA",
+        "url": "https://www.statssa.gov.za/census/census_2022/census_2022_products/Census_2022_Statistical_release.pdf",
+        "publicationName": "Census 2022 Statistical Release",
+        "publicationDate": "2023-10-10"
+      },
+      "lastUpdated": "2023-10-10",
+      "series": [
+        {
+          "name": "Electricity Access (%)",
+          "unit": "%",
+          "data": [
+            { "label": "2001", "value": 70.0 },
+            { "label": "2011", "value": 85.4 },
+            { "label": "2016", "value": 88.2 },
+            { "label": "2022", "value": 91.2 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "housing-formal-dwellings",
+      "categoryId": "housing",
+      "title": "Households in Formal Dwellings",
+      "value": "80.9%",
+      "rawValue": 80.9,
+      "unit": "%",
+      "change": 6.4,
+      "changeLabel": "since Census 2011",
+      "trend": "up",
+      "description": "Percentage of households living in formal dwellings (brick/concrete houses, flats, townhouses) as per Census 2022. Approximately 14.8% live in informal dwellings (shacks). Gauteng has the highest proportion of informal settlements.",
+      "source": {
+        "name": "Statistics South Africa",
+        "shortName": "Stats SA",
+        "url": "https://www.statssa.gov.za/census/census_2022/census_2022_products/Census_2022_Statistical_release.pdf",
+        "publicationName": "Census 2022 Statistical Release",
+        "publicationDate": "2023-10-10"
+      },
+      "lastUpdated": "2023-10-10",
+      "series": [
+        {
+          "name": "Formal Dwellings (%)",
+          "unit": "%",
+          "data": [
+            { "label": "2001", "value": 65.2 },
+            { "label": "2011", "value": 74.5 },
+            { "label": "2016", "value": 78.1 },
+            { "label": "2022", "value": 80.9 }
+          ]
+        }
+      ]
+    }
+  ]
+}

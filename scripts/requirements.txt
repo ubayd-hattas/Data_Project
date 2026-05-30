@@ -1,0 +1,5 @@
+# SA Data Hub — Python script dependencies
+# Install with: pip install -r scripts/requirements.txt
+
+requests>=2.31.0
+python-dateutil>=2.9.0

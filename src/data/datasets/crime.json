@@ -1,0 +1,112 @@
+{
+  "_meta": {
+    "source": "South African Police Service — Crime Statistics",
+    "source_url": "https://www.saps.gov.za/services/crimestats.php",
+    "update_frequency": "Annual (September each year, for Apr–Mar financial year)",
+    "last_verified": "2025-05-01",
+    "notes": "SAPS publishes crime stats once per year in September. No public API. Data must be manually extracted from the published Excel workbooks. Latest available: 2023/24. Update by running: python scripts/update_crime.py (manual step required — see script comments)"
+  },
+  "statistics": [
+    {
+      "id": "murder-rate",
+      "categoryId": "crime",
+      "title": "Murder Cases",
+      "value": "26,232",
+      "rawValue": 26232,
+      "unit": "cases",
+      "change": -4.6,
+      "changeLabel": "from 2022/23",
+      "trend": "down",
+      "description": "Total murder cases reported nationally for the 2023/24 financial year (April 2023 – March 2024). This is the first decline in four years, equating to approximately 72 murders per day. The rate is 41.9 per 100,000 population.",
+      "source": {
+        "name": "South African Police Service",
+        "shortName": "SAPS",
+        "url": "https://www.saps.gov.za/services/crimestats.php",
+        "publicationName": "Crime Statistics 2023/24",
+        "publicationDate": "2024-09-20"
+      },
+      "lastUpdated": "2024-09-20",
+      "series": [
+        {
+          "name": "Murder Cases",
+          "unit": "cases",
+          "data": [
+            { "label": "2017/18", "value": 20336 },
+            { "label": "2018/19", "value": 21022 },
+            { "label": "2019/20", "value": 21325 },
+            { "label": "2020/21", "value": 23961 },
+            { "label": "2021/22", "value": 26873 },
+            { "label": "2022/23", "value": 27494 },
+            { "label": "2023/24", "value": 26232 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crime-contact",
+      "categoryId": "crime",
+      "title": "Contact Crimes (Total)",
+      "value": "561,947",
+      "rawValue": 561947,
+      "unit": "cases",
+      "change": -4.0,
+      "changeLabel": "from 2022/23",
+      "trend": "down",
+      "description": "Contact crimes include assault GBH, common assault, robbery with aggravating circumstances, common robbery, sexual offences, and murder. Total contact crimes declined for the 2023/24 reporting period.",
+      "source": {
+        "name": "South African Police Service",
+        "shortName": "SAPS",
+        "url": "https://www.saps.gov.za/services/crimestats.php",
+        "publicationName": "Crime Statistics 2023/24",
+        "publicationDate": "2024-09-20"
+      },
+      "lastUpdated": "2024-09-20",
+      "series": [
+        {
+          "name": "Contact Crimes",
+          "unit": "cases",
+          "data": [
+            { "label": "2019/20", "value": 531804 },
+            { "label": "2020/21", "value": 411568 },
+            { "label": "2021/22", "value": 562874 },
+            { "label": "2022/23", "value": 585561 },
+            { "label": "2023/24", "value": 561947 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crime-robbery",
+      "categoryId": "crime",
+      "title": "Robbery with Aggravating Circumstances",
+      "value": "162,618",
+      "rawValue": 162618,
+      "unit": "cases",
+      "change": -3.1,
+      "changeLabel": "from 2022/23",
+      "trend": "down",
+      "description": "Robberies involving a weapon, violence, or the threat of violence for the 2023/24 financial year. This category includes carjacking, truck hijacking, house robbery, and bank robbery.",
+      "source": {
+        "name": "South African Police Service",
+        "shortName": "SAPS",
+        "url": "https://www.saps.gov.za/services/crimestats.php",
+        "publicationName": "Crime Statistics 2023/24",
+        "publicationDate": "2024-09-20"
+      },
+      "lastUpdated": "2024-09-20",
+      "series": [
+        {
+          "name": "Aggravated Robbery",
+          "unit": "cases",
+          "data": [
+            { "label": "2019/20", "value": 164389 },
+            { "label": "2020/21", "value": 115655 },
+            { "label": "2021/22", "value": 160007 },
+            { "label": "2022/23", "value": 167861 },
+            { "label": "2023/24", "value": 162618 }
+          ]
+        }
+      ]
+    }
+  ]
+}

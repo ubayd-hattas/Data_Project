@@ -1,0 +1,93 @@
+{
+  "_meta": {
+    "source": "Statistics South Africa — Census 2022",
+    "source_url": "https://www.statssa.gov.za/census/census_2022/census_2022_products/Census_2022_Statistical_release.pdf",
+    "update_frequency": "Decennial (next census ~2032)",
+    "last_verified": "2025-05-01",
+    "notes": "Census 2022 data is static until the next census. No automation needed. These figures are definitive."
+  },
+  "statistics": [
+    {
+      "id": "census-households",
+      "categoryId": "census",
+      "title": "Total Households",
+      "value": "17.3M",
+      "rawValue": 17285000,
+      "unit": "households",
+      "change": 33.7,
+      "changeLabel": "since Census 2011",
+      "trend": "up",
+      "description": "Total private households counted in Census 2022. Average household size has declined from 3.4 persons in 2011 to 3.0 in 2022, reflecting changing family structures and increasing urbanisation.",
+      "source": {
+        "name": "Statistics South Africa",
+        "shortName": "Stats SA",
+        "url": "https://www.statssa.gov.za/census/census_2022/census_2022_products/Census_2022_Statistical_release.pdf",
+        "publicationName": "Census 2022 Statistical Release",
+        "publicationDate": "2023-10-10"
+      },
+      "lastUpdated": "2023-10-10",
+      "series": [
+        {
+          "name": "Households (millions)",
+          "unit": "million",
+          "data": [
+            { "label": "2001", "value": 10.9 },
+            { "label": "2011", "value": 14.5 },
+            { "label": "2022", "value": 17.3 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "census-internet-access",
+      "categoryId": "census",
+      "title": "Households with Internet Access",
+      "value": "64.0%",
+      "rawValue": 64.0,
+      "unit": "%",
+      "change": 33.0,
+      "changeLabel": "since Census 2011",
+      "trend": "up",
+      "description": "Percentage of households with internet access (including mobile data) per Census 2022. In 2011 only 31% had access. The rapid expansion of mobile internet (4G/LTE) is the primary driver.",
+      "source": {
+        "name": "Statistics South Africa",
+        "shortName": "Stats SA",
+        "url": "https://www.statssa.gov.za/census/census_2022/census_2022_products/Census_2022_Statistical_release.pdf",
+        "publicationName": "Census 2022 Statistical Release",
+        "publicationDate": "2023-10-10"
+      },
+      "lastUpdated": "2023-10-10",
+      "series": [
+        {
+          "name": "Internet Access (%)",
+          "unit": "%",
+          "data": [
+            { "label": "2011", "value": 31.0 },
+            { "label": "2016", "value": 48.0 },
+            { "label": "2022", "value": 64.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "census-no-income",
+      "categoryId": "census",
+      "title": "Individuals with No Income",
+      "value": "30.4%",
+      "rawValue": 30.4,
+      "unit": "%",
+      "change": -5.1,
+      "changeLabel": "since Census 2011",
+      "trend": "down",
+      "description": "Percentage of individuals 15 years and older who reported no income in Census 2022. This includes the unemployed, students, and those who are economically inactive. The decline reflects expanding social grants and labour market changes.",
+      "source": {
+        "name": "Statistics South Africa",
+        "shortName": "Stats SA",
+        "url": "https://www.statssa.gov.za/census/census_2022/census_2022_products/Census_2022_Statistical_release.pdf",
+        "publicationName": "Census 2022 Statistical Release",
+        "publicationDate": "2023-10-10"
+      },
+      "lastUpdated": "2023-10-10"
+    }
+  ]
+}
