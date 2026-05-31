@@ -1,13 +1,19 @@
 /**
  * src/data/mock.ts
  *
- * SA Data Hub — Data Layer v2
+ * SA Data Hub — Data Layer v2.1
  *
  * ── What changed in v2 ────────────────────────────────────────────────────────
  * - Added province data from provinces.json
  * - Added getProvinceData() and getProvinceById() helpers
  * - searchStats() now uses the fuzzy search engine (typo tolerance + synonyms)
  * - All existing function signatures preserved — no frontend component changes
+ *
+ * ── What changed in v2.1 ─────────────────────────────────────────────────────
+ * - Added youth-unemployment.json dataset
+ * - Added interest-rates.json dataset
+ * - Added labour-force.json dataset
+ * - getProvinceData() exported (previously provinces was public but no helper)
  *
  * ── Data files ────────────────────────────────────────────────────────────────
  * src/data/datasets/<category>.json  — one file per category
@@ -21,15 +27,18 @@ import { Category, Statistic, ProvinceData } from '@/types'
 import { searchStatistics } from '@/lib/search'
 
 // ─── Dataset imports ──────────────────────────────────────────────────────────
-import unemploymentData from './datasets/unemployment.json'
-import inflationData    from './datasets/inflation.json'
-import gdpData          from './datasets/gdp.json'
-import crimeData        from './datasets/crime.json'
-import educationData    from './datasets/education.json'
-import populationData   from './datasets/population.json'
-import housingData      from './datasets/housing.json'
-import censusData       from './datasets/census.json'
-import provincesData    from './datasets/provinces.json'
+import unemploymentData    from './datasets/unemployment.json'
+import inflationData       from './datasets/inflation.json'
+import gdpData             from './datasets/gdp.json'
+import crimeData           from './datasets/crime.json'
+import educationData       from './datasets/education.json'
+import populationData      from './datasets/population.json'
+import housingData         from './datasets/housing.json'
+import censusData          from './datasets/census.json'
+import provincesData       from './datasets/provinces.json'
+import youthUnemployment   from './datasets/youth-unemployment.json'
+import interestRatesData   from './datasets/interest-rates.json'
+import labourForceData     from './datasets/labour-force.json'
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 
@@ -37,25 +46,25 @@ export const categories: Category[] = [
   {
     id: 'unemployment',
     label: 'Unemployment',
-    description: 'Labour force participation, jobless rates, and employment trends across provinces.',
+    description: 'Labour force participation, jobless rates and employment trends across provinces.',
     icon: 'Briefcase',
     color: 'text-orange-600 dark:text-orange-400',
     bgColor: 'bg-orange-50 dark:bg-orange-950/30',
-    stats: unemploymentData.statistics.length,
+    stats: unemploymentData.statistics.length + youthUnemployment.statistics.length + labourForceData.statistics.length,
   },
   {
     id: 'gdp',
     label: 'GDP & Economy',
-    description: 'Gross domestic product, economic growth, and sectoral output data.',
+    description: 'Gross domestic product, economic growth, interest rates and sectoral output data.',
     icon: 'TrendingUp',
     color: 'text-brand-600 dark:text-brand-400',
     bgColor: 'bg-brand-50 dark:bg-brand-950/30',
-    stats: gdpData.statistics.length,
+    stats: gdpData.statistics.length + interestRatesData.statistics.length,
   },
   {
     id: 'inflation',
     label: 'Inflation & Prices',
-    description: 'Consumer price index, producer prices, and purchasing power trends.',
+    description: 'Consumer price index, producer prices and purchasing power trends.',
     icon: 'ShoppingCart',
     color: 'text-red-600 dark:text-red-400',
     bgColor: 'bg-red-50 dark:bg-red-950/30',
@@ -64,7 +73,7 @@ export const categories: Category[] = [
   {
     id: 'crime',
     label: 'Crime',
-    description: 'Crime statistics by category, province, and reporting period.',
+    description: 'Crime statistics by category, province and reporting period.',
     icon: 'Shield',
     color: 'text-slate-600 dark:text-slate-400',
     bgColor: 'bg-slate-50 dark:bg-slate-950/30',
@@ -73,7 +82,7 @@ export const categories: Category[] = [
   {
     id: 'education',
     label: 'Education',
-    description: 'Matric pass rates, enrolment figures, literacy rates, and tertiary education data.',
+    description: 'Matric pass rates, enrolment figures, literacy rates and tertiary education data.',
     icon: 'GraduationCap',
     color: 'text-blue-600 dark:text-blue-400',
     bgColor: 'bg-blue-50 dark:bg-blue-950/30',
@@ -82,7 +91,7 @@ export const categories: Category[] = [
   {
     id: 'population',
     label: 'Population',
-    description: 'Demographics, age distribution, migration, and household composition.',
+    description: 'Demographics, age distribution, migration and household composition.',
     icon: 'Users',
     color: 'text-violet-600 dark:text-violet-400',
     bgColor: 'bg-violet-50 dark:bg-violet-950/30',
@@ -91,7 +100,7 @@ export const categories: Category[] = [
   {
     id: 'housing',
     label: 'Housing',
-    description: 'Home ownership, informal settlements, housing delivery, and access to services.',
+    description: 'Home ownership, informal settlements, housing delivery and access to services.',
     icon: 'Home',
     color: 'text-amber-600 dark:text-amber-400',
     bgColor: 'bg-amber-50 dark:bg-amber-950/30',
@@ -111,14 +120,17 @@ export const categories: Category[] = [
 // ─── Statistics ───────────────────────────────────────────────────────────────
 
 export const statistics: Statistic[] = [
-  ...(unemploymentData.statistics as Statistic[]),
-  ...(inflationData.statistics    as Statistic[]),
-  ...(gdpData.statistics          as Statistic[]),
-  ...(crimeData.statistics        as Statistic[]),
-  ...(educationData.statistics    as Statistic[]),
-  ...(populationData.statistics   as Statistic[]),
-  ...(housingData.statistics      as Statistic[]),
-  ...(censusData.statistics       as Statistic[]),
+  ...(unemploymentData.statistics  as Statistic[]),
+  ...(youthUnemployment.statistics as Statistic[]),
+  ...(labourForceData.statistics   as Statistic[]),
+  ...(inflationData.statistics     as Statistic[]),
+  ...(gdpData.statistics           as Statistic[]),
+  ...(interestRatesData.statistics as Statistic[]),
+  ...(crimeData.statistics         as Statistic[]),
+  ...(educationData.statistics     as Statistic[]),
+  ...(populationData.statistics    as Statistic[]),
+  ...(housingData.statistics       as Statistic[]),
+  ...(censusData.statistics        as Statistic[]),
 ]
 
 // ─── Province data ────────────────────────────────────────────────────────────
@@ -161,6 +173,10 @@ export function searchStats(query: string): Statistic[] {
 }
 
 // ─── Province helpers (NEW) ──────────────────────────────────────────────────
+
+export function getProvinceData(): ProvinceData[] {
+  return provinces
+}
 
 export function getProvinceById(id: string): ProvinceData | undefined {
   return provinces.find((p) => p.id === id)

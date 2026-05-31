@@ -47,6 +47,20 @@ export function Footer() {
 
           {/* Sources */}
           <div>
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Platform</h3>
+            <ul className="space-y-2 text-sm mb-6">
+              {[
+                { label: 'Province Explorer', href: '/provinces' },
+                { label: 'Dashboard', href: '/dashboard' },
+                { label: 'Methodology', href: '/methodology' },
+              ].map(({ label, href }) => (
+                <li key={label}>
+                  <Link href={href} className="text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Data Sources</h3>
             <ul className="space-y-2 text-sm">
               {[

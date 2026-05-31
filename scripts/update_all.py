@@ -33,14 +33,15 @@ from pathlib import Path
 # automation_level: "auto" = fully automated, "manual" = prints instructions
 
 UPDATERS = [
-    ("update_inflation",    "inflation",    "auto"),
-    ("update_unemployment", "unemployment", "auto"),
-    ("update_gdp",          "gdp",          "auto"),
-    ("update_population",   "population",   "auto"),
-    ("update_crime",        "crime",        "manual"),    # SAPS has no API
-    ("update_education",    "education",    "manual"),    # DBE releases annually
-    ("update_housing",      "housing",      "manual"),    # Census / GHS
-    ("update_census",       "census",       "manual"),    # Static until 2032
+    ("update_inflation",       "inflation",       "auto"),
+    ("update_unemployment",    "unemployment",    "auto"),
+    ("update_gdp",             "gdp",             "auto"),
+    ("update_interest_rates",  "interest-rates",  "manual"),  # update LATEST_REPO_RATE after MPC
+    ("update_population",      "population",      "auto"),
+    ("update_crime",           "crime",           "manual"),    # SAPS has no API
+    ("update_education",       "education",       "manual"),    # DBE releases annually
+    ("update_housing",         "housing",         "manual"),    # Census / GHS
+    ("update_census",          "census",          "manual"),    # Static until 2032
 ]
 
 

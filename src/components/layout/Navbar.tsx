@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/provinces', label: 'Provinces' },
   {
     label: 'Categories',
     children: [
@@ -23,6 +24,7 @@ const navLinks = [
       { href: '/category/census', label: 'Census 2022' },
     ],
   },
+  { href: '/methodology', label: 'Methodology' },
 ]
 
 function ThemeToggle() {
