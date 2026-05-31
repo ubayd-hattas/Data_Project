@@ -25,15 +25,15 @@ export type Province =
 // ─── Data Structures ────────────────────────────────────────────────────────
 
 export interface DataPoint {
-  label: string       // e.g. "Q1 2023", "2019", "Jan"
+  label: string
   value: number
-  secondaryValue?: number  // for multi-series charts
+  secondaryValue?: number
 }
 
 export interface DataSeries {
   name: string
   data: DataPoint[]
-  unit: string        // e.g. "%", "ZAR", "million"
+  unit: string
   color?: string
 }
 
@@ -41,24 +41,25 @@ export interface Statistic {
   id: string
   categoryId: CategoryId
   title: string
-  value: string           // formatted display value e.g. "32.9%"
+  value: string
   rawValue: number
   unit: string
-  change: number          // percentage point change from previous period
-  changeLabel: string     // e.g. "from Q3 2023"
+  change: number
+  changeLabel: string
   trend: 'up' | 'down' | 'stable'
   description: string
   source: DataSource
-  lastUpdated: string     // ISO date string
+  lastUpdated: string
   province?: Province
   series?: DataSeries[]
-  insight?: Insight       // optional computed or authored insight
+  insight?: Insight
 }
 
 export interface DataSource {
-  name: string            // e.g. "Statistics South Africa"
-  shortName: string       // e.g. "Stats SA"
+  name: string
+  shortName: string
   url: string
+  release?: string
   publicationName?: string
   publicationDate?: string
 }
@@ -69,11 +70,58 @@ export type InsightSentiment = 'positive' | 'negative' | 'neutral' | 'mixed'
 export type InsightType = 'trend' | 'turning-point' | 'context' | 'comparison' | 'warning'
 
 export interface Insight {
-  summary: string           // 1–2 sentence headline insight
+  summary: string
   sentiment: InsightSentiment
   type: InsightType
-  details?: string[]        // supporting bullet points (optional)
-  generatedFrom?: string    // e.g. "16-quarter trend analysis"
+  details?: string[]
+  generatedFrom?: string
+}
+
+// ─── Insights Hub — Story types ──────────────────────────────────────────────
+
+export type StoryCategory =
+  | 'unemployment'
+  | 'economy'
+  | 'inflation'
+  | 'crime'
+  | 'education'
+  | 'population'
+  | 'housing'
+  | 'policy'
+
+export interface StorySection {
+  id: string
+  heading: string
+  body: string                    // prose paragraphs, newline-separated
+  statCallouts?: string[]         // Statistic IDs to render as live callouts
+  highlight?: string              // pull-quote or key sentence
+}
+
+export interface Story {
+  slug: string
+  title: string
+  subtitle: string
+  category: StoryCategory
+  categoryLabel: string
+  readingTimeMinutes: number
+  publishedDate: string           // ISO date
+  lastUpdated: string             // ISO date
+  featured: boolean
+  coverEmoji: string              // simple visual identity
+  summary: string                 // 2-3 sentence teaser shown on card
+  relatedStatIds: string[]        // Statistic IDs shown as live callouts
+  relatedSlugs?: string[]         // Other story slugs for "related stories"
+  sections: StorySection[]
+  tags: string[]
+}
+
+// ─── Historical Timeline ─────────────────────────────────────────────────────
+
+export interface TimelineEvent {
+  date: string          // "YYYY" or "YYYY-MM"
+  label: string
+  description: string
+  type: 'economic' | 'political' | 'social' | 'crisis'
 }
 
 // ─── Province Data ───────────────────────────────────────────────────────────
@@ -122,10 +170,10 @@ export interface Category {
   id: CategoryId
   label: string
   description: string
-  icon: string            // lucide icon name
-  color: string           // tailwind color class
+  icon: string
+  color: string
   bgColor: string
-  stats: number           // number of datasets in category
+  stats: number
 }
 
 // ─── Search ─────────────────────────────────────────────────────────────────
@@ -137,7 +185,7 @@ export interface SearchResult {
   categoryLabel: string
   value: string
   href: string
-  score?: number          // relevance score for fuzzy matching
+  score?: number
 }
 
 // ─── Dashboard Filters ──────────────────────────────────────────────────────

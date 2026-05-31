@@ -96,17 +96,41 @@ export default function HomePage() {
       {/* ── Category Grid ──────────────────────────────────────────────────── */}
       <section className="py-16">
         <div className="container-page">
-          <div className="mb-8">
-            <h2 className="heading-display text-2xl font-semibold">Browse by category</h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Dive deep into any area of South African public life
-            </p>
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <h2 className="heading-display text-2xl font-semibold">Browse by category</h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Dive deep into any area of South African public life
+              </p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {categories.map((category) => (
               <CategoryCard key={category.id} category={category} />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Insights Promo ─────────────────────────────────────────────────── */}
+      <section className="border-y border-slate-200 dark:border-slate-800 bg-gradient-to-r from-brand-950 to-slate-900 py-14">
+        <div className="container-page">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="max-w-lg">
+              <p className="text-xs font-semibold uppercase tracking-wider text-brand-400 mb-2">Data Stories</p>
+              <h2 className="text-2xl font-semibold text-white mb-2">Beyond the numbers</h2>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Understand what the statistics actually mean. Data-driven narratives on unemployment, inflation,
+                youth employment, provincial inequality, and more.
+              </p>
+            </div>
+            <Link
+              href="/insights"
+              className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-3 text-sm font-medium text-white hover:bg-brand-500 transition-colors"
+            >
+              Read the stories <ArrowRight size={16} />
+            </Link>
           </div>
         </div>
       </section>

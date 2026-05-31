@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import { StatCard } from '@/components/ui/StatCard'
 import { InsightPanel } from '@/components/ui/InsightPanel'
+import { DatasetExplanation } from '@/components/ui/DatasetExplanation'
+import { FreshnessIndicator } from '@/components/ui/FreshnessIndicator'
 import { LineChartCard } from '@/components/charts/LineChartCard'
 import { BarChartCard } from '@/components/charts/BarChartCard'
 import { SourceBadge } from '@/components/ui/SourceBadge'
@@ -16,6 +18,18 @@ import { formatDate } from '@/lib/utils'
 const iconMap: Record<string, LucideIcon> = {
   Briefcase, TrendingUp, ShoppingCart, Shield,
   GraduationCap, Users, Home, BarChart3,
+}
+
+// Map category ID to a sensible update frequency label
+const UPDATE_FREQUENCY: Record<string, string> = {
+  unemployment: 'Quarterly',
+  inflation:    'Monthly',
+  gdp:          'Quarterly',
+  crime:        'Annual',
+  education:    'Annual',
+  population:   'Annual',
+  housing:      'Annual',
+  census:       'Static (Census 2022)',
 }
 
 interface CategoryPageProps {
@@ -39,6 +53,10 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const allSources = Array.from(new Map(stats.map((s) => [s.source.name, s.source])).values())
   const latestUpdate = stats.map((s) => s.lastUpdated).sort().reverse()[0]
   const categoryInsight = generateCategoryInsight(stats)
+  const updateFrequency = UPDATE_FREQUENCY[params.slug]
+
+  // Use first stat's source for the freshness indicator (most representative)
+  const primaryStat = stats[0]
 
   return (
     <div className="animate-fade-in py-8">
@@ -66,6 +84,17 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           </div>
         </div>
 
+        {/* Data Freshness */}
+        {primaryStat && latestUpdate && (
+          <div className="mb-8">
+            <FreshnessIndicator
+              lastUpdated={latestUpdate}
+              source={primaryStat.source}
+              updateFrequency={updateFrequency}
+            />
+          </div>
+        )}
+
         {/* Category-level insight */}
         {categoryInsight && (
           <div className="mb-8 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
@@ -73,7 +102,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           </div>
         )}
 
-        {/* Overview cards + per-stat insights */}
+        {/* Overview cards */}
         <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {stats.map((stat) => {
             const insight = generateInsight(stat)
@@ -85,6 +114,24 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             )
           })}
         </div>
+
+        {/* Dataset Explanations — one per stat with series data */}
+        {statsWithSeries.length > 0 && (
+          <div className="mb-10">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
+              Understanding the data
+            </h2>
+            <div className="flex flex-col gap-3">
+              {statsWithSeries.map((stat, i) => (
+                <DatasetExplanation
+                  key={stat.id}
+                  stat={stat}
+                  defaultOpen={i === 0}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Charts with full insights */}
         {statsWithSeries.length > 0 && (

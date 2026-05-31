@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { SlidersHorizontal } from 'lucide-react'
+import Link from 'next/link'
+import { SlidersHorizontal, BookOpen, ArrowRight } from 'lucide-react'
 import { StatCard } from '@/components/ui/StatCard'
 import { LineChartCard } from '@/components/charts/LineChartCard'
+import { HistoricalTimeline } from '@/components/ui/HistoricalTimeline'
 import { SearchBar } from '@/components/ui/SearchBar'
-import { statistics, categories } from '@/data/mock'
+import { statistics, categories, getStatById } from '@/data/mock'
 import { CategoryId, Province } from '@/types'
 import { cn, provinceLabels } from '@/lib/utils'
 
@@ -178,6 +180,47 @@ export default function DashboardPage() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Historical Timeline */}
+        {(() => {
+          const gdpStat = getStatById('gdp-growth')
+          const cpiStat = getStatById('cpi-headline')
+          const unempStat = getStatById('unemployment-national')
+          const timelineSeries = [
+            gdpStat?.series?.[0] && { name: 'GDP Growth', color: '#18a06d', unit: '%', data: gdpStat.series[0].data },
+            unempStat?.series?.[0] && { name: 'Unemployment', color: '#f59e0b', unit: '%', data: unempStat.series[0].data },
+          ].filter(Boolean) as any[]
+          if (timelineSeries.length === 0) return null
+          return (
+            <div className="mt-10">
+              <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">Historical context</h2>
+              <HistoricalTimeline
+                title="SA Key Indicators — Long-run view"
+                description="GDP growth and unemployment over time, with major economic and political events."
+                series={timelineSeries}
+              />
+            </div>
+          )
+        })()}
+
+        {/* Insights promo */}
+        <div className="mt-8 card p-5 flex flex-wrap items-center justify-between gap-4 bg-gradient-to-r from-brand-50 to-slate-50 dark:from-brand-950/20 dark:to-slate-900 border-brand-200 dark:border-brand-900">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-white shrink-0">
+              <BookOpen size={18} />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-900 dark:text-white text-sm">Want to understand the data?</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Read our data stories — narratives that explain what these numbers mean.</p>
+            </div>
+          </div>
+          <Link
+            href="/insights"
+            className="flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 shrink-0"
+          >
+            Read stories <ArrowRight size={14} />
+          </Link>
         </div>
 
         {/* Source note */}

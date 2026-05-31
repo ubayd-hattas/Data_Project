@@ -17,7 +17,6 @@ interface BarChartCardProps {
   series: DataSeries[]
   height?: number
   color?: string
-  horizontal?: boolean
 }
 
 function CustomTooltip({ active, payload, label }: any) {
@@ -27,9 +26,9 @@ function CustomTooltip({ active, payload, label }: any) {
       <p className="mb-1 text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</p>
       {payload.map((entry: any) => (
         <div key={entry.name} className="flex items-center gap-2 text-sm">
-          <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.fill }} />
+          <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: entry.fill }} />
           <span className="font-mono font-medium text-slate-900 dark:text-white">
-            {entry.value.toLocaleString('en-ZA')}
+            {typeof entry.value === 'number' ? entry.value.toLocaleString('en-ZA') : entry.value}
           </span>
         </div>
       ))}
@@ -65,15 +64,18 @@ export function BarChartCard({ title, series, height = 280, color = '#18a06d' }:
             tickLine={false}
             axisLine={false}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.04)' }} />
-          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+          {/* FIX: cursor='false' removes the grey hover block entirely for bar charts */}
+          <Tooltip content={<CustomTooltip />} cursor={false} />
+          <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={48}>
             {s.data.map((_, i) => (
-              <Cell key={i} fill={color} fillOpacity={0.85 + (i % 3) * 0.05} />
+              <Cell key={i} fill={color} fillOpacity={0.88} />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <p className="mt-2 text-right text-xs text-slate-400">Unit: {s.unit}</p>
+      {s.unit && (
+        <p className="mt-2 text-right text-xs text-slate-400">Unit: {s.unit}</p>
+      )}
     </div>
   )
 }
