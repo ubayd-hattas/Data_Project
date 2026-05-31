@@ -32,13 +32,13 @@ export const metadata: Metadata = {
   description:
     'Explore South African public data — unemployment, GDP, inflation, crime, education, population, housing, and census statistics.',
   keywords: ['South Africa', 'statistics', 'data', 'Stats SA', 'public data', 'census'],
-  icons: {
-    icon: '/favicon.ico', 
+
   },
   openGraph: {
     title: 'SA Data Hub',
     description: 'Modern, accessible South African public data.',
     type: 'website',
+    siteName: 'SA Data Hub',
  images: [
       {
         url: '/og-image.png',
