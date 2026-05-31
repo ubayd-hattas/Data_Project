@@ -21,7 +21,7 @@ export function Footer() {
               understandable for everyone.
             </p>
             <p className="mt-4 text-xs text-slate-400">
-              Data sourced from Statistics South Africa, SARB, SAPS, and other official bodies. Not affiliated with any
+              Data sourced from Statistics South Africa, SARB, SAPS and other official bodies. Not affiliated with any
               government department.
             </p>
           </div>
@@ -92,7 +92,7 @@ export function Footer() {
             © {new Date().getFullYear()} SA Data Hub. Open source and not for profit.
           </p>
           <p className="text-xs text-slate-400">
-            Built with Next.js · Data from official South African sources
+            Built by Ubayd Hattas · Data from official South African sources
           </p>
         </div>
       </div>
