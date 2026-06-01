@@ -8,28 +8,18 @@ import { StatCard } from '@/components/ui/StatCard'
 import { InsightPanel } from '@/components/ui/InsightPanel'
 import { DatasetExplanation } from '@/components/ui/DatasetExplanation'
 import { FreshnessIndicator } from '@/components/ui/FreshnessIndicator'
+import { ExportButton } from '@/components/ui/ExportButton'
 import { LineChartCard } from '@/components/charts/LineChartCard'
 import { BarChartCard } from '@/components/charts/BarChartCard'
 import { SourceBadge } from '@/components/ui/SourceBadge'
 import { getCategoryById, getStatsByCategory } from '@/data/mock'
+import { getRegistryByCategory } from '@/lib/registry'
 import { generateInsight, generateCategoryInsight } from '@/lib/insights'
 import { formatDate } from '@/lib/utils'
 
 const iconMap: Record<string, LucideIcon> = {
   Briefcase, TrendingUp, ShoppingCart, Shield,
   GraduationCap, Users, Home, BarChart3,
-}
-
-// Map category ID to a sensible update frequency label
-const UPDATE_FREQUENCY: Record<string, string> = {
-  unemployment: 'Quarterly',
-  inflation:    'Monthly',
-  gdp:          'Quarterly',
-  crime:        'Annual',
-  education:    'Annual',
-  population:   'Annual',
-  housing:      'Annual',
-  census:       'Static (Census 2022)',
 }
 
 interface CategoryPageProps {
@@ -53,7 +43,11 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   const allSources = Array.from(new Map(stats.map((s) => [s.source.name, s.source])).values())
   const latestUpdate = stats.map((s) => s.lastUpdated).sort().reverse()[0]
   const categoryInsight = generateCategoryInsight(stats)
-  const updateFrequency = UPDATE_FREQUENCY[params.slug]
+
+  // Read update frequency from the registry instead of the local hardcoded map
+  // Falls back gracefully if the category has no registry entry (shouldn't happen)
+  const registryEntries = getRegistryByCategory(category.id)
+  const updateFrequency = registryEntries[0]?.updateFrequency
 
   // Use first stat's source for the freshness indicator (most representative)
   const primaryStat = stats[0]
@@ -70,18 +64,29 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           <ArrowLeft size={14} /> Back to dashboard
         </Link>
 
-        {/* Header */}
-        <div className="mb-6 flex items-start gap-4">
-          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${category.bgColor}`}>
-            <Icon size={24} className={category.color} />
+        {/* Header — title, description, export (always visible; stacks on narrow screens) */}
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 flex-1 items-start gap-4">
+            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${category.bgColor}`}>
+              <Icon size={24} className={category.color} />
+            </div>
+            <div className="min-w-0">
+              <h1 className="heading-display text-3xl font-semibold">{category.label}</h1>
+              <p className="mt-1 max-w-xl text-slate-500 dark:text-slate-400">{category.description}</p>
+              <p className="mt-2 text-xs text-slate-400">
+                {stats.length} dataset{stats.length !== 1 ? 's' : ''} · Last updated {latestUpdate ? formatDate(latestUpdate) : '—'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="heading-display text-3xl font-semibold">{category.label}</h1>
-            <p className="mt-1 max-w-xl text-slate-500 dark:text-slate-400">{category.description}</p>
-            <p className="mt-2 text-xs text-slate-400">
-              {stats.length} dataset{stats.length !== 1 ? 's' : ''} · Last updated {latestUpdate ? formatDate(latestUpdate) : '—'}
-            </p>
-          </div>
+
+          {stats.length > 0 && (
+            <ExportButton
+              stats={stats}
+              label={category.label}
+              variant="full"
+              className="w-full shrink-0 sm:w-auto"
+            />
+          )}
         </div>
 
         {/* Data Freshness */}
@@ -115,7 +120,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           })}
         </div>
 
-        {/* Dataset Explanations — one per stat with series data */}
+        {/* Dataset Explanations */}
         {statsWithSeries.length > 0 && (
           <div className="mb-10">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
@@ -133,7 +138,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           </div>
         )}
 
-        {/* Charts with full insights */}
+        {/* Charts — stat prop passed to enable per-chart export */}
         {statsWithSeries.length > 0 && (
           <div className="mb-10">
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
@@ -145,9 +150,17 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 return (
                   <div key={stat.id} className="flex flex-col gap-3">
                     {i % 2 === 0 ? (
-                      <LineChartCard title={stat.title} series={stat.series!} />
+                      <LineChartCard
+                        title={stat.title}
+                        series={stat.series!}
+                        stat={stat}
+                      />
                     ) : (
-                      <BarChartCard title={stat.title} series={stat.series!} />
+                      <BarChartCard
+                        title={stat.title}
+                        series={stat.series!}
+                        stat={stat}
+                      />
                     )}
                     <InsightPanel insight={insight} />
                   </div>

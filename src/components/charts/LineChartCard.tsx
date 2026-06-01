@@ -10,13 +10,16 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts'
-import { DataSeries } from '@/types'
+import { DataSeries, Statistic } from '@/types'
+import { ChartExportButton } from '@/components/ui/ExportButton'
 
 interface LineChartCardProps {
   title: string
   series: DataSeries[]
   height?: number
   showLegend?: boolean
+  /** Optional: pass the parent Statistic to enable per-chart CSV export */
+  stat?: Statistic
 }
 
 const CHART_COLORS = ['#18a06d', '#e8ab10', '#3b82f6', '#ef4444', '#8b5cf6']
@@ -40,7 +43,7 @@ function CustomTooltip({ active, payload, label }: any) {
   )
 }
 
-// Transparent cursor line — replaces the default grey filled rectangle
+// Transparent cursor line — no grey filled rectangle on hover
 function CustomCursor({ points, height }: any) {
   if (!points?.length) return null
   const { x } = points[0]
@@ -58,7 +61,7 @@ function CustomCursor({ points, height }: any) {
   )
 }
 
-export function LineChartCard({ title, series, height = 280, showLegend = false }: LineChartCardProps) {
+export function LineChartCard({ title, series, height = 280, showLegend = false, stat }: LineChartCardProps) {
   const data = series[0]?.data.map((point, i) => {
     const row: Record<string, string | number> = { label: point.label }
     series.forEach((s) => {
@@ -69,7 +72,12 @@ export function LineChartCard({ title, series, height = 280, showLegend = false 
 
   return (
     <div className="card p-5">
-      <h3 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-200">{title}</h3>
+      {/* Card header: title + optional export button */}
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <h3 className="min-w-0 flex-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{title}</h3>
+        {stat ? <ChartExportButton stat={stat} /> : null}
+      </div>
+
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
           <CartesianGrid
@@ -90,7 +98,6 @@ export function LineChartCard({ title, series, height = 280, showLegend = false 
             tickLine={false}
             axisLine={false}
           />
-          {/* FIX: use custom cursor to eliminate the grey filled rectangle on hover */}
           <Tooltip content={<CustomTooltip />} cursor={<CustomCursor />} />
           {showLegend && (
             <Legend
@@ -114,6 +121,7 @@ export function LineChartCard({ title, series, height = 280, showLegend = false 
           ))}
         </LineChart>
       </ResponsiveContainer>
+
       {series[0]?.unit && (
         <p className="mt-2 text-right text-xs text-slate-400">
           Unit: {series[0].unit}

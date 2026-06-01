@@ -10,13 +10,16 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts'
-import { DataSeries } from '@/types'
+import { DataSeries, Statistic } from '@/types'
+import { ChartExportButton } from '@/components/ui/ExportButton'
 
 interface BarChartCardProps {
   title: string
   series: DataSeries[]
   height?: number
   color?: string
+  /** Optional: pass the parent Statistic to enable per-chart CSV export */
+  stat?: Statistic
 }
 
 function CustomTooltip({ active, payload, label }: any) {
@@ -36,13 +39,18 @@ function CustomTooltip({ active, payload, label }: any) {
   )
 }
 
-export function BarChartCard({ title, series, height = 280, color = '#18a06d' }: BarChartCardProps) {
+export function BarChartCard({ title, series, height = 280, color = '#18a06d', stat }: BarChartCardProps) {
   const s = series[0]
   if (!s) return null
 
   return (
     <div className="card p-5">
-      <h3 className="mb-4 text-sm font-semibold text-slate-700 dark:text-slate-200">{title}</h3>
+      {/* Card header: title + optional export button */}
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <h3 className="min-w-0 flex-1 text-sm font-semibold text-slate-700 dark:text-slate-200">{title}</h3>
+        {stat ? <ChartExportButton stat={stat} /> : null}
+      </div>
+
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={s.data} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
           <CartesianGrid
@@ -64,7 +72,7 @@ export function BarChartCard({ title, series, height = 280, color = '#18a06d' }:
             tickLine={false}
             axisLine={false}
           />
-          {/* FIX: cursor='false' removes the grey hover block entirely for bar charts */}
+          {/* cursor={false} removes the grey hover block */}
           <Tooltip content={<CustomTooltip />} cursor={false} />
           <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={48}>
             {s.data.map((_, i) => (
@@ -73,6 +81,7 @@ export function BarChartCard({ title, series, height = 280, color = '#18a06d' }:
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+
       {s.unit && (
         <p className="mt-2 text-right text-xs text-slate-400">Unit: {s.unit}</p>
       )}

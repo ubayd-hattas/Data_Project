@@ -1,23 +1,19 @@
 /**
  * src/data/mock.ts
  *
- * SA Data Hub — Data Layer v2.1
+ * SA Data Hub — Data Layer v4
  *
- * ── What changed in v2 ────────────────────────────────────────────────────────
- * - Added province data from provinces.json
- * - Added getProvinceData() and getProvinceById() helpers
- * - searchStats() now uses the fuzzy search engine (typo tolerance + synonyms)
- * - All existing function signatures preserved — no frontend component changes
+ * ── What changed in v4 ────────────────────────────────────────────────────────
+ * - Added getStatsByIds() helper (used by registry-based features in Phase 2+)
+ * - All existing exports and signatures preserved
  *
- * ── What changed in v2.1 ─────────────────────────────────────────────────────
- * - Added youth-unemployment.json dataset
- * - Added interest-rates.json dataset
- * - Added labour-force.json dataset
- * - getProvinceData() exported (previously provinces was public but no helper)
+ * ── Previous changes ─────────────────────────────────────────────────────────
+ * v2:   Added province data, fuzzy search
+ * v2.1: Added youth-unemployment, interest-rates, labour-force datasets
  *
  * ── Data files ────────────────────────────────────────────────────────────────
  * src/data/datasets/<category>.json  — one file per category
- * src/data/datasets/provinces.json   — provincial breakdown data (NEW)
+ * src/data/datasets/provinces.json   — provincial breakdown data
  *
  * ── Updating data ─────────────────────────────────────────────────────────────
  * Run:  python scripts/update_all.py
@@ -137,7 +133,7 @@ export const statistics: Statistic[] = [
 
 export const provinces: ProvinceData[] = provincesData.provinces as ProvinceData[]
 
-// ─── Helpers — identical signatures to v1 ────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 export function getStatsByCategory(categoryId: string): Statistic[] {
   return statistics.filter((s) => s.categoryId === categoryId)
@@ -149,6 +145,17 @@ export function getCategoryById(id: string): Category | undefined {
 
 export function getStatById(id: string): Statistic | undefined {
   return statistics.find((s) => s.id === id)
+}
+
+/**
+ * Returns stats for an explicit list of IDs, preserving the order of the input array.
+ * Used by the Dataset Registry to fetch stats for sub-category datasets
+ * (e.g. youth-unemployment, interest-rates) that share a categoryId with a parent.
+ */
+export function getStatsByIds(ids: string[]): Statistic[] {
+  return ids
+    .map((id) => statistics.find((s) => s.id === id))
+    .filter((s): s is Statistic => s !== undefined)
 }
 
 export function getFeaturedStats(): Statistic[] {
@@ -165,14 +172,14 @@ export function getFeaturedStats(): Statistic[] {
     .filter((s): s is Statistic => s !== undefined)
 }
 
-/** Fuzzy search — replaces the previous exact substring match. */
+/** Fuzzy search — delegates to src/lib/search.ts */
 export function searchStats(query: string): Statistic[] {
   return searchStatistics(query, statistics).map((r) =>
     statistics.find((s) => s.id === r.id)!
   )
 }
 
-// ─── Province helpers (NEW) ──────────────────────────────────────────────────
+// ─── Province helpers ────────────────────────────────────────────────────────
 
 export function getProvinceData(): ProvinceData[] {
   return provinces

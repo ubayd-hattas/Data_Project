@@ -1,6 +1,6 @@
 import { Clock, RefreshCw, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react'
 import { DataSource } from '@/types'
-import { cn } from '@/lib/utils'
+import { cn, getFreshness, formatRelativeDate, formatAbsoluteDate, FreshnessStatus } from '@/lib/utils'
 
 interface FreshnessIndicatorProps {
   lastUpdated: string        // ISO date string
@@ -8,26 +8,6 @@ interface FreshnessIndicatorProps {
   updateFrequency?: string   // e.g. "Monthly", "Quarterly", "Annual"
   className?: string
   compact?: boolean
-}
-
-type FreshnessStatus = 'fresh' | 'recent' | 'aging' | 'stale'
-
-function getFreshness(lastUpdated: string, frequency?: string): FreshnessStatus {
-  const now = new Date()
-  const updated = new Date(lastUpdated)
-  const diffDays = Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24))
-
-  // Determine expected max age by frequency
-  const maxAge = frequency?.toLowerCase().includes('month') ? 45
-    : frequency?.toLowerCase().includes('quarter') ? 120
-    : frequency?.toLowerCase().includes('annual') ? 400
-    : frequency?.toLowerCase().includes('static') ? 99999
-    : 180
-
-  if (diffDays <= maxAge * 0.5) return 'fresh'
-  if (diffDays <= maxAge) return 'recent'
-  if (diffDays <= maxAge * 1.5) return 'aging'
-  return 'stale'
 }
 
 const statusConfig: Record<FreshnessStatus, {
@@ -65,27 +45,6 @@ const statusConfig: Record<FreshnessStatus, {
     bgClass: 'bg-red-50 dark:bg-red-950/30',
     borderClass: 'border-red-200 dark:border-red-800',
   },
-}
-
-function formatRelativeDate(isoDate: string): string {
-  const now = new Date()
-  const date = new Date(isoDate)
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-
-  if (diffDays === 0) return 'Today'
-  if (diffDays === 1) return 'Yesterday'
-  if (diffDays < 7) return `${diffDays} days ago`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? 's' : ''} ago`
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? 's' : ''} ago`
-  return `${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) > 1 ? 's' : ''} ago`
-}
-
-function formatAbsoluteDate(isoDate: string): string {
-  return new Date(isoDate).toLocaleDateString('en-ZA', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
 }
 
 export function FreshnessIndicator({
@@ -152,9 +111,9 @@ export function FreshnessIndicator({
               </a>
             </div>
 
-            {source.publicationName && (
-              <div className="text-xs text-slate-400 pl-0">
-                {source.publicationName}
+            {(source.publicationName ?? source.release) && (
+              <div className="text-xs text-slate-400">
+                {source.publicationName ?? source.release}
                 {source.publicationDate && (
                   <span> · {formatAbsoluteDate(source.publicationDate)}</span>
                 )}

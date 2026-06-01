@@ -47,7 +47,6 @@ export function getTrendBadgeClass(trend: 'up' | 'down' | 'stable', isGoodWhenDo
 }
 
 // ─── Category helpers ─────────────────────────────────────────────────────────
-// For some categories, a downward trend is good (e.g., unemployment, crime, inflation)
 export const GOOD_WHEN_DOWN: CategoryId[] = ['unemployment', 'crime', 'inflation']
 
 export function isGoodWhenDown(categoryId: CategoryId): boolean {
@@ -66,4 +65,56 @@ export const provinceLabels: Record<string, string> = {
   'north-west': 'North West',
   'free-state': 'Free State',
   'northern-cape': 'Northern Cape',
+}
+
+// ─── Freshness helpers ────────────────────────────────────────────────────────
+// Extracted from FreshnessIndicator.tsx so they can be consumed by:
+//   - FreshnessIndicator (via import)
+//   - src/lib/registry.ts (Update Log, Phase 4)
+//   - src/app/updates/page.tsx (Update Log page, Phase 4)
+
+export type FreshnessStatus = 'fresh' | 'recent' | 'aging' | 'stale'
+
+/**
+ * Returns a freshness status based on how old the data is relative to
+ * the expected update frequency.
+ */
+export function getFreshness(lastUpdated: string, frequency?: string): FreshnessStatus {
+  const now = new Date()
+  const updated = new Date(lastUpdated)
+  const diffDays = Math.floor((now.getTime() - updated.getTime()) / (1000 * 60 * 60 * 24))
+
+  const maxAge = frequency?.toLowerCase().includes('month') ? 45
+    : frequency?.toLowerCase().includes('quarter') ? 120
+    : frequency?.toLowerCase().includes('annual') ? 400
+    : frequency?.toLowerCase().includes('static') ? 99999
+    : 180
+
+  if (diffDays <= maxAge * 0.5) return 'fresh'
+  if (diffDays <= maxAge) return 'recent'
+  if (diffDays <= maxAge * 1.5) return 'aging'
+  return 'stale'
+}
+
+/** Returns a human-readable relative date string, e.g. "3 months ago". */
+export function formatRelativeDate(isoDate: string): string {
+  const now = new Date()
+  const date = new Date(isoDate)
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (diffDays === 0) return 'Today'
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays < 7) return `${diffDays} days ago`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? 's' : ''} ago`
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? 's' : ''} ago`
+  return `${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) > 1 ? 's' : ''} ago`
+}
+
+/** Returns a full locale-formatted date string, e.g. "10 October 2023". */
+export function formatAbsoluteDate(isoDate: string): string {
+  return new Date(isoDate).toLocaleDateString('en-ZA', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
 }
