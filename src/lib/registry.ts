@@ -28,10 +28,26 @@
 import { CategoryId } from '@/types'
 import { statistics, getStatById } from '@/data/mock'
 import { getFreshness, FreshnessStatus } from '@/lib/utils'
+import { UPDATE_HISTORY, UpdateHistoryEntry } from '@/data/update-history'
+
+// Dataset JSON imports for propagating `_meta.notes` into the registry.
+import unemploymentData from '@/data/datasets/unemployment.json'
+import youthUnemploymentData from '@/data/datasets/youth-unemployment.json'
+import labourForceData from '@/data/datasets/labour-force.json'
+import inflationData from '@/data/datasets/inflation.json'
+import gdpData from '@/data/datasets/gdp.json'
+import interestRatesData from '@/data/datasets/interest-rates.json'
+import crimeData from '@/data/datasets/crime.json'
+import educationData from '@/data/datasets/education.json'
+import populationData from '@/data/datasets/population.json'
+import housingData from '@/data/datasets/housing.json'
+import censusData from '@/data/datasets/census.json'
+import provincesData from '@/data/datasets/provinces.json'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type AutomationLevel = 'auto' | 'semi-auto' | 'manual' | 'static'
+export type DatasetStatus = 'up-to-date' | 'update-expected-soon' | 'potentially-outdated'
 
 export interface DatasetRegistryEntry {
   /** Matches the JSON filename stem, e.g. "youth-unemployment" */
@@ -42,8 +58,11 @@ export interface DatasetRegistryEntry {
   description: string
   /** All Statistic IDs that belong to this dataset */
   statIds: string[]
-  /** The categoryId these stats belong to in the UI */
-  categoryId: CategoryId
+  /**
+   * The categoryId these stats belong to in the UI.
+   * Optional for non-statistics datasets (e.g. provinces export).
+   */
+  categoryId?: CategoryId
   /** Primary source organisation name */
   sourceName: string
   /** Primary source organisation short name */
@@ -60,12 +79,24 @@ export interface DatasetRegistryEntry {
   unit: string
   /** Earliest data point label across all series */
   seriesStart: string
+
+  // ─── Stabilization / Download Center metadata ──────────────────────────
+  /** Approximate source file size (used for UI display). */
+  fileSize?: string
+  /** Total exported row count in CSV (data points). */
+  dataPointCount?: number
+  /** Methodology notes/caveats from the dataset `_meta.notes` block. */
+  notes?: string
+  /** National vs provincial vs municipal coverage. */
+  geographicLevel?: 'national' | 'provincial' | 'municipal'
+  /** Latest data point label across all series. */
+  seriesEnd?: string
 }
 
 // ─── Registry entries ─────────────────────────────────────────────────────────
 // Ordered to match the categories array in mock.ts
 
-export const datasetRegistry: DatasetRegistryEntry[] = [
+const datasetRegistryBase: DatasetRegistryEntry[] = [
   {
     id: 'unemployment',
     label: 'Unemployment',
@@ -100,7 +131,7 @@ export const datasetRegistry: DatasetRegistryEntry[] = [
     id: 'labour-force',
     label: 'Labour Force Participation',
     description: 'Labour force participation rates by gender and overall, from the Stats SA QLFS.',
-    statIds: ['labour-force-participation', 'female-labour-participation'],
+    statIds: ['lfpr-overall', 'female-labour-participation'],
     categoryId: 'unemployment',
     sourceName: 'Statistics South Africa',
     sourceShortName: 'Stats SA',
@@ -145,7 +176,7 @@ export const datasetRegistry: DatasetRegistryEntry[] = [
     id: 'interest-rates',
     label: 'Interest Rates',
     description: 'SARB repo rate and prime lending rate from MPC statements.',
-    statIds: ['repo-rate', 'prime-lending-rate'],
+    statIds: ['repo-rate-sarb', 'prime-lending-rate'],
     categoryId: 'gdp',
     sourceName: 'South African Reserve Bank',
     sourceShortName: 'SARB',
@@ -231,7 +262,151 @@ export const datasetRegistry: DatasetRegistryEntry[] = [
     unit: 'various',
     seriesStart: '2001',
   },
+  {
+    id: 'provinces',
+    label: 'Provinces',
+    description: 'Unemployment, population, education and housing indicators by province.',
+    statIds: [],
+    // Not tied to a single category page; displayed in the Download Center as its own dataset.
+    categoryId: undefined,
+    sourceName: (provincesData as any)._meta?.source ?? 'Statistics South Africa',
+    sourceShortName: 'Stats SA',
+    sourceUrl: (provincesData as any)._meta?.source_url ?? 'https://www.statssa.gov.za/',
+    publicationName: 'Quarterly Labour Force Survey (Provincial breakdown)',
+    updateFrequency: (provincesData as any)._meta?.update_frequency ?? 'Quarterly',
+    automationLevel: 'semi-auto',
+    unit: 'various',
+    seriesStart: (provincesData as any).provinces?.[0]?.stats?.unemployment?.period ?? '—',
+  },
 ]
+
+// ─── Stabilization-derived metadata (registry remains source of truth) ──
+
+const FILE_SIZE_BY_ID: Record<string, string> = {
+  unemployment: '5,921 B',
+  'youth-unemployment': '6,861 B',
+  'labour-force': '4,537 B',
+  inflation: '7,636 B',
+  gdp: '6,851 B',
+  'interest-rates': '5,068 B',
+  crime: '4,397 B',
+  education: '4,376 B',
+  population: '4,239 B',
+  housing: '4,231 B',
+  census: '3,708 B',
+  provinces: '8,307 B',
+}
+
+function parseCoverageLabel(label: string): number {
+  // Handles common dataset label formats like:
+  // - Q1 2022
+  // - Jan 2022
+  // - 2017/18
+  // - 2024
+  const q = label.match(/^Q([1-4])\s+(\d{4})$/i)
+  if (q) return Number(q[2]) * 10 + Number(q[1])
+
+  const m = label.match(/^([A-Za-z]{3})\s+(\d{4})$/)
+  if (m) {
+    const monthMap: Record<string, number> = {
+      Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6,
+      Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12,
+    }
+    const month = monthMap[m[1].slice(0, 3)] ?? NaN
+    if (!Number.isNaN(month)) return Number(m[2]) * 12 + month
+  }
+
+  const year = label.match(/^(\d{4})$/)
+  if (year) return Number(year[1]) * 100
+
+  const hy = label.match(/^(\d{4})\/\d{2}$/)
+  if (hy) return Number(hy[1]) * 100
+
+  const any4 = label.match(/(\d{4})/)
+  if (any4) return Number(any4[1])
+
+  return Number.NaN
+}
+
+function computeEntryDataPointCount(entry: DatasetRegistryEntry): number {
+  if (entry.id === 'provinces') {
+    return ((provincesData as any).provinces as any[] | undefined)?.length ?? 0
+  }
+
+  let count = 0
+  for (const id of entry.statIds) {
+    const stat = getStatById(id)
+    if (!stat) continue
+    if (stat.series?.length) {
+      for (const s of stat.series) count += s.data?.length ?? 0
+    } else {
+      count += 1
+    }
+  }
+  return count
+}
+
+function computeEntrySeriesEnd(entry: DatasetRegistryEntry): string {
+  if (entry.id === 'provinces') {
+    return entry.seriesStart
+  }
+
+  const candidates: Array<{ label: string; score: number }> = []
+
+  for (const id of entry.statIds) {
+    const stat = getStatById(id)
+    const series = stat?.series
+    if (!series?.length) continue
+
+    for (const s of series) {
+      const last = s.data?.[s.data.length - 1]
+      if (!last?.label) continue
+      const score = parseCoverageLabel(last.label)
+      candidates.push({ label: last.label, score })
+    }
+  }
+
+  if (!candidates.length) return entry.seriesStart
+
+  // Prefer higher numeric score; if score is NaN, fall back to lexical label.
+  candidates.sort((a, b) => {
+    const aNan = Number.isNaN(a.score)
+    const bNan = Number.isNaN(b.score)
+    if (aNan && bNan) return a.label.localeCompare(b.label)
+    if (aNan) return -1
+    if (bNan) return 1
+    return b.score - a.score
+  })
+
+  return candidates[0].label
+}
+
+const NOTES_BY_ID: Record<string, string> = {
+  unemployment: (unemploymentData as any)._meta?.notes ?? '',
+  'youth-unemployment': (youthUnemploymentData as any)._meta?.notes ?? '',
+  'labour-force': (labourForceData as any)._meta?.notes ?? '',
+  inflation: (inflationData as any)._meta?.notes ?? '',
+  gdp: (gdpData as any)._meta?.notes ?? '',
+  'interest-rates': (interestRatesData as any)._meta?.notes ?? '',
+  crime: (crimeData as any)._meta?.notes ?? '',
+  education: (educationData as any)._meta?.notes ?? '',
+  population: (populationData as any)._meta?.notes ?? '',
+  housing: (housingData as any)._meta?.notes ?? '',
+  census: (censusData as any)._meta?.notes ?? '',
+  provinces: (provincesData as any)._meta?.notes ?? '',
+}
+
+export const datasetRegistry: DatasetRegistryEntry[] = datasetRegistryBase.map((entry) => {
+  const geographicLevel = entry.id === 'provinces' ? 'provincial' : 'national'
+  return {
+    ...entry,
+    fileSize: entry.fileSize ?? FILE_SIZE_BY_ID[entry.id],
+    notes: entry.notes ?? NOTES_BY_ID[entry.id],
+    geographicLevel: entry.geographicLevel ?? geographicLevel,
+    dataPointCount: entry.dataPointCount ?? computeEntryDataPointCount(entry),
+    seriesEnd: entry.seriesEnd ?? computeEntrySeriesEnd(entry),
+  }
+})
 
 // ─── Derived fields helpers ───────────────────────────────────────────────────
 
@@ -240,6 +415,9 @@ export const datasetRegistry: DatasetRegistryEntry[] = [
  * Reads from the live statistics array — always accurate.
  */
 export function getEntryLastUpdated(entry: DatasetRegistryEntry): string {
+  if (entry.id === 'provinces') {
+    return (provincesData as any)._meta?.last_verified ?? ''
+  }
   const dates = entry.statIds
     .map((id) => getStatById(id)?.lastUpdated)
     .filter((d): d is string => !!d)
@@ -298,6 +476,11 @@ export interface UpdateLogEntry {
   sourceName: string
   sourceUrl: string
   freshnessStatus: FreshnessStatus
+  status: DatasetStatus
+  releaseIdentifier?: string
+  notes?: string
+  geographicLevel?: DatasetRegistryEntry['geographicLevel']
+  updateHistory: UpdateHistoryEntry[]
 }
 
 /**
@@ -316,7 +499,42 @@ export function getUpdateLog(): UpdateLogEntry[] {
       sourceName: entry.sourceName,
       sourceUrl: entry.sourceUrl,
       freshnessStatus: getEntryFreshness(entry),
+      status: getDatasetStatus(entry),
+      releaseIdentifier: getReleaseIdentifier(entry),
+      notes: entry.notes,
+      geographicLevel: entry.geographicLevel,
+      updateHistory: getEntryUpdateHistory(entry.id),
     }))
     .filter((e) => e.lastUpdated !== '')
     .sort((a, b) => b.lastUpdated.localeCompare(a.lastUpdated))
+}
+
+export function getUpdateLogEntry(datasetId: string): UpdateLogEntry | undefined {
+  return getUpdateLog().find((entry) => entry.datasetId === datasetId)
+}
+
+/**
+ * Derives a reusable dataset status from metadata only.
+ * This keeps status consistent across category pages and /updates.
+ */
+export function getDatasetStatus(entry: DatasetRegistryEntry): DatasetStatus {
+  const freshness = getEntryFreshness(entry)
+  if (freshness === 'fresh') return 'up-to-date'
+  if (freshness === 'recent') return 'update-expected-soon'
+  return 'potentially-outdated'
+}
+
+/**
+ * Human-readable release identifier for update-log UIs.
+ * Derived from existing metadata fields; no dataset-specific hardcoding.
+ */
+export function getReleaseIdentifier(entry: DatasetRegistryEntry): string | undefined {
+  return entry.publicationName ?? undefined
+}
+
+/** Returns update-history rows for a specific dataset ID, newest first. */
+export function getEntryUpdateHistory(datasetId: string): UpdateHistoryEntry[] {
+  return UPDATE_HISTORY
+    .filter((item) => item.datasetId === datasetId)
+    .sort((a, b) => b.date.localeCompare(a.date))
 }

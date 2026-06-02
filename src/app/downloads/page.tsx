@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Download, RefreshCw, Clock, CheckCircle, AlertTriangle, AlertCircle, ExternalLink } from 'lucide-react'
-import { ExportButton } from '@/components/ui/ExportButton'
+import { ExportButton, ProvincesExportButton } from '@/components/ui/ExportButton'
 import { CitationWidget } from '@/components/ui/CitationWidget'
 import {
   datasetRegistry,
@@ -10,7 +10,7 @@ import {
   AutomationLevel,
   DatasetRegistryEntry,
 } from '@/lib/registry'
-import { getStatsByIds } from '@/data/mock'
+import { getProvinceData, getStatsByIds } from '@/data/mock'
 import { formatDate } from '@/lib/utils'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -42,10 +42,12 @@ function freshnessIcon(status: ReturnType<typeof getEntryFreshness>) {
 // ─── Dataset Download Card ────────────────────────────────────────────────────
 
 function DatasetDownloadCard({ entry }: { entry: DatasetRegistryEntry }) {
+  const isProvinces = entry.id === 'provinces'
   const lastUpdated = getEntryLastUpdated(entry)
-  const statCount   = getEntryStatCount(entry)
   const freshness   = getEntryFreshness(entry)
-  const stats       = getStatsByIds(entry.statIds)
+  const provinces   = isProvinces ? getProvinceData() : []
+  const stats       = isProvinces ? [] : getStatsByIds(entry.statIds)
+  const statCount   = isProvinces ? provinces.length : getEntryStatCount(entry)
 
   return (
     <div className="card flex flex-col gap-4 p-5">
@@ -75,8 +77,42 @@ function DatasetDownloadCard({ entry }: { entry: DatasetRegistryEntry }) {
         {/* Stat count */}
         <span className="flex items-center gap-1">
           <Download size={12} />
-          {statCount} indicator{statCount !== 1 ? 's' : ''}
+          {isProvinces
+            ? `${statCount} provinc${statCount === 1 ? 'e' : 'es'}`
+            : `${statCount} indicator${statCount !== 1 ? 's' : ''}`}
         </span>
+
+        {/* File size */}
+        {entry.fileSize && (
+          <span className="flex items-center gap-1" title="Approximate source JSON size">
+            <Download size={12} />
+            {entry.fileSize}
+          </span>
+        )}
+
+        {/* Row count (export CSV rows) */}
+        {entry.dataPointCount !== undefined && (
+          <span className="flex items-center gap-1" title="Estimated CSV row count">
+            <Download size={12} />
+            {entry.dataPointCount.toLocaleString('en-ZA')} rows
+          </span>
+        )}
+
+        {/* Data coverage */}
+        {entry.seriesStart && entry.seriesEnd && (
+          <span className="flex items-center gap-1" title="Coverage start and end">
+            <Clock size={12} />
+            {entry.seriesStart}–{entry.seriesEnd}
+          </span>
+        )}
+
+        {/* Geographic level */}
+        {entry.geographicLevel && (
+          <span className="flex items-center gap-1" title="Geographic coverage">
+            <Clock size={12} />
+            {entry.geographicLevel === 'provincial' ? 'Provincial' : 'National'}
+          </span>
+        )}
       </div>
 
       {/* Source */}
@@ -96,14 +132,29 @@ function DatasetDownloadCard({ entry }: { entry: DatasetRegistryEntry }) {
         )}
       </div>
 
+      {entry.notes && (
+        <p className="text-xs leading-relaxed text-slate-400 dark:text-slate-500">
+          Notes: {entry.notes}
+        </p>
+      )}
+
       {/* Export button */}
       <div className="mt-auto pt-1">
-        <ExportButton
-          stats={stats}
-          label={entry.label}
-          variant="full"
-          className="w-full justify-center"
-        />
+        {isProvinces ? (
+          <ProvincesExportButton
+            provinces={provinces}
+            label={entry.label}
+            className="w-full justify-center"
+          />
+        ) : (
+          <ExportButton
+            stats={stats}
+            label={entry.label}
+            variant="full"
+            exportMode="series"
+            className="w-full justify-center"
+          />
+        )}
       </div>
 
       {/* Citation widget */}

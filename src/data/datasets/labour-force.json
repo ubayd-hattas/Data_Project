@@ -8,7 +8,7 @@
   },
   "statistics": [
     {
-      "id": "labour-force-participation",
+      "id": "lfpr-overall",
       "categoryId": "unemployment",
       "title": "Labour Force Participation Rate",
       "value": "60.6%",

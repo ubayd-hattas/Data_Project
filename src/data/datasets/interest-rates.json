@@ -8,7 +8,7 @@
   },
   "statistics": [
     {
-      "id": "repo-rate",
+      "id": "repo-rate-sarb",
       "categoryId": "gdp",
       "title": "Repo Rate",
       "value": "7.50%",

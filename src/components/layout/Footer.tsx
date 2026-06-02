@@ -52,6 +52,7 @@ export function Footer() {
               {[
                 { label: 'Data Stories', href: '/insights' },
                 { label: 'Data Downloads', href: '/downloads' },
+                { label: 'Dataset Updates', href: '/updates' },
                 { label: 'Province Explorer', href: '/provinces' },
                 { label: 'Dashboard', href: '/dashboard' },
                 { label: 'Methodology', href: '/methodology' },

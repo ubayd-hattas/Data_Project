@@ -15,7 +15,7 @@
  *   exportDataset(stats, 'Unemployment')   // triggers browser download
  */
 
-import { Statistic } from '@/types'
+import { ProvinceData, Statistic } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -205,6 +205,101 @@ export function exportDataset(
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
   const filename   = `sa-data-hub_${slugLabel}_${todayISO()}.csv`
+
+  downloadCsv(filename, csvContent)
+}
+
+// ─── Provinces dataset export ────────────────────────────────────────────
+
+/**
+ * Converts ProvinceData[] into a province-level CSV string.
+ *
+ * Provinces are not modelled as `Statistic` time-series, so we export a
+ * single row per province including all indicator fields currently present
+ * in `provinces.json`.
+ */
+export function buildProvinceCsvContent(
+  provinces: ProvinceData[],
+  datasetLabel: string,
+  options: { includeHeader?: boolean } = {}
+): string {
+  const { includeHeader = true } = options
+
+  const today = todayISO()
+  const rows: string[] = []
+
+  if (includeHeader) {
+    rows.push(`# SA Data Hub — ${datasetLabel} — Downloaded ${today} — sadatahub.co.za`)
+    rows.push(`# Data sourced from official South African government publications. See sadatahub.co.za/methodology`)
+  }
+
+  rows.push(
+    csvRow([
+      'province_id',
+      'province_name',
+      'capital',
+      'unemployment_rate',
+      'unemployment_expanded_rate',
+      'unemployment_period',
+      'unemployment_trend',
+      'unemployment_change',
+      'unemployment_rank',
+      'population_total',
+      'population_urban',
+      'population_share',
+      'population_source',
+      'education_matric_pass_rate',
+      'education_year',
+      'education_literacy_rate',
+      'housing_electricity_access',
+      'housing_piped_water_in_dwelling',
+      'housing_formal_dwellings',
+      'gdp_share',
+    ])
+  )
+
+  for (const p of provinces) {
+    rows.push(
+      csvRow([
+        p.id,
+        p.name,
+        p.capital,
+        p.stats.unemployment.rate,
+        p.stats.unemployment.expanded,
+        p.stats.unemployment.period,
+        p.stats.unemployment.trend,
+        p.stats.unemployment.change,
+        p.unemploymentRank,
+        p.stats.population.total,
+        p.stats.population.urban,
+        p.populationShare,
+        p.stats.population.source,
+        p.stats.education.matricPassRate,
+        p.stats.education.year,
+        p.stats.education.literacyRate,
+        p.stats.housing.electricityAccess,
+        p.stats.housing.pipedWaterInDwelling,
+        p.stats.housing.formalDwellings,
+        p.gdpShare,
+      ])
+    )
+  }
+
+  return rows.join('\n')
+}
+
+/**
+ * Triggers a browser file download for the provinces dataset CSV.
+ */
+export function exportProvincesDataset(provinces: ProvinceData[], datasetLabel: string): void {
+  if (!provinces.length) return
+
+  const csvContent = buildProvinceCsvContent(provinces, datasetLabel)
+  const slugLabel = datasetLabel
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+  const filename = `sa-data-hub_${slugLabel}_${todayISO()}.csv`
 
   downloadCsv(filename, csvContent)
 }
