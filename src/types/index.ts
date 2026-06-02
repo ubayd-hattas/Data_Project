@@ -178,14 +178,19 @@ export interface Category {
 
 // ─── Search ─────────────────────────────────────────────────────────────────
 
+export type SearchResultKind = 'statistic' | 'province' | 'dataset'
+
 export interface SearchResult {
   id: string
+  kind: SearchResultKind
   title: string
-  categoryId: CategoryId
+  categoryId?: CategoryId
   categoryLabel: string
   value: string
   href: string
   score?: number
+  subtitle?: string
+  provinceId?: Province
 }
 
 // ─── Dashboard Filters ──────────────────────────────────────────────────────

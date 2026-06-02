@@ -20,7 +20,9 @@
  */
 
 import { Category, Statistic, ProvinceData } from '@/types'
-import { searchStatistics } from '@/lib/search'
+import { intelligentSearch } from '@/lib/search'
+import type { DatasetRegistryEntry } from '@/lib/registry'
+import { SearchResult } from '@/types'
 
 // ─── Dataset imports ──────────────────────────────────────────────────────────
 import unemploymentData    from './datasets/unemployment.json'
@@ -172,11 +174,23 @@ export function getFeaturedStats(): Statistic[] {
     .filter((s): s is Statistic => s !== undefined)
 }
 
-/** Fuzzy search — delegates to src/lib/search.ts */
+function getDatasetRegistryLazy(): DatasetRegistryEntry[] {
+  // Lazy require avoids mock ↔ registry circular init at module load.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('@/lib/registry').datasetRegistry as DatasetRegistryEntry[]
+}
+
+/** Intent-aware search — provinces, registry datasets, and statistics. */
+export function searchAll(query: string): SearchResult[] {
+  return intelligentSearch(query, statistics, provinces, categories, getDatasetRegistryLazy())
+}
+
+/** Statistics only (backward compatible). */
 export function searchStats(query: string): Statistic[] {
-  return searchStatistics(query, statistics).map((r) =>
-    statistics.find((s) => s.id === r.id)!
-  )
+  return searchAll(query)
+    .filter((r) => r.kind === 'statistic')
+    .map((r) => statistics.find((s) => s.id === r.id)!)
+    .filter(Boolean)
 }
 
 // ─── Province helpers ────────────────────────────────────────────────────────

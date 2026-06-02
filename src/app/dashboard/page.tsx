@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
-import { SlidersHorizontal, BookOpen, ArrowRight } from 'lucide-react'
+import { SlidersHorizontal, BookOpen, ArrowRight, MapPin, Database, BarChart2 } from 'lucide-react'
 import { StatCard } from '@/components/ui/StatCard'
 import { LineChartCard } from '@/components/charts/LineChartCard'
 import { HistoricalTimeline } from '@/components/ui/HistoricalTimeline'
 import { SearchBar } from '@/components/ui/SearchBar'
-import { statistics, categories, getStatById } from '@/data/mock'
-import { CategoryId, Province } from '@/types'
+import { statistics, categories, getStatById, searchAll } from '@/data/mock'
+import { CategoryId, Province, SearchResult, SearchResultKind } from '@/types'
 import { cn, provinceLabels } from '@/lib/utils'
 
 const ALL_CATEGORIES: { id: CategoryId | 'all'; label: string }[] = [
@@ -29,22 +29,87 @@ const PROVINCES: Province[] = [
   'northern-cape',
 ]
 
+const RESULT_KIND_META: Record<
+  SearchResultKind,
+  { label: string; icon: typeof BarChart2; className: string }
+> = {
+  province: {
+    label: 'Province',
+    icon: MapPin,
+    className: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
+  },
+  dataset: {
+    label: 'Dataset',
+    icon: Database,
+    className: 'bg-brand-50 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300',
+  },
+  statistic: {
+    label: 'Statistic',
+    icon: BarChart2,
+    className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+  },
+}
+
+function SearchResultRow({ result }: { result: SearchResult }) {
+  const meta = RESULT_KIND_META[result.kind]
+  const Icon = meta.icon
+  return (
+    <Link
+      href={result.href}
+      className="card flex items-start gap-3 p-4 transition-shadow hover:shadow-md"
+    >
+      <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', meta.className)}>
+        <Icon size={16} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="font-medium text-slate-900 dark:text-white">{result.title}</p>
+          <span className={cn('rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide', meta.className)}>
+            {meta.label}
+          </span>
+        </div>
+        {result.subtitle && (
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 line-clamp-2">{result.subtitle}</p>
+        )}
+        <p className="mt-1 text-sm font-semibold text-brand-600 dark:text-brand-400">{result.value}</p>
+        <p className="text-xs text-slate-400">{result.categoryLabel}</p>
+      </div>
+      <ArrowRight size={16} className="mt-1 shrink-0 text-slate-300" />
+    </Link>
+  )
+}
+
 export default function DashboardPage() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | 'all'>('all')
   const [selectedProvince, setSelectedProvince] = useState<Province>('all')
   const [search, setSearch] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const q = params.get('search')
+    if (q) setSearch(q)
+  }, [])
+
+  const searchResults = useMemo(
+    () => (search.trim() ? searchAll(search) : []),
+    [search]
+  )
+
   const filtered = useMemo(() => {
+    if (search.trim() && searchResults.length > 0) {
+      const statIds = searchResults.filter((r) => r.kind === 'statistic').map((r) => r.id)
+      const order = new Map(statIds.map((id, i) => [id, i]))
+      return statistics
+        .filter((s) => statIds.includes(s.id))
+        .filter((s) => selectedCategory === 'all' || s.categoryId === selectedCategory)
+        .sort((a, b) => (order.get(a.id) ?? 99) - (order.get(b.id) ?? 99))
+    }
     return statistics.filter((s) => {
       const matchCategory = selectedCategory === 'all' || s.categoryId === selectedCategory
-      const matchSearch =
-        !search ||
-        s.title.toLowerCase().includes(search.toLowerCase()) ||
-        s.description.toLowerCase().includes(search.toLowerCase())
-      return matchCategory && matchSearch
+      return matchCategory
     })
-  }, [selectedCategory, search])
+  }, [selectedCategory, search, searchResults])
 
   // Pick a few stats with series for the chart showcase
   const chartStats = useMemo(
@@ -69,7 +134,7 @@ export default function DashboardPage() {
           <SearchBar
             className="flex-1"
             onSearch={setSearch}
-            placeholder="Search statistics…"
+            placeholder="Try 'western cape unemployment' or 'repo rate'…"
           />
           <button
             onClick={() => setShowFilters(!showFilters)}
@@ -138,6 +203,26 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Intent-aware search results */}
+        {search.trim() && searchResults.length > 0 && (
+          <div className="mb-8">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
+              Search results
+            </h2>
+            <div className="flex flex-col gap-2">
+              {searchResults.map((result) => (
+                <SearchResultRow key={`${result.kind}-${result.id}`} result={result} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {search.trim() && searchResults.length === 0 && (
+          <div className="mb-8 card p-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            No matches for &ldquo;{search}&rdquo;. Try a province name, dataset, or indicator.
+          </div>
+        )}
+
         {/* Charts section */}
         {chartStats.length > 0 && (
           <div className="mb-8">
@@ -161,7 +246,9 @@ export default function DashboardPage() {
           </h2>
           {filtered.length === 0 ? (
             <div className="card flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-slate-400">No statistics match your filters.</p>
+              <p className="text-slate-400">
+                {search.trim() ? 'No statistics in this category for your search.' : 'No statistics match your filters.'}
+              </p>
               <button
                 onClick={() => { setSearch(''); setSelectedCategory('all') }}
                 className="mt-3 text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
