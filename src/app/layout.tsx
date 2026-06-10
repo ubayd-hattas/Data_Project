@@ -27,7 +27,7 @@ const dmMono = DM_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://sadatahub.vercel.app'),
+  metadataBase: new URL('https://sadatahub.tech'),
   title: 'SA Data Hub — South African Public Data',
   description:
     'Explore South African public data — unemployment, GDP, inflation, crime, education, population, housing, and census statistics.',
