@@ -1,12 +1,17 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   MapPin, ArrowLeft, TrendingUp, TrendingDown, Minus,
   Users, GraduationCap, Home, Zap, Droplets, BarChart3,
   ArrowRight,
 } from 'lucide-react'
-import { getProvinceById, getProvinceData } from '@/data/mock'
-import { cn } from '@/lib/utils'
+import { getProvinceById, getProvinceData, getMunicipalitiesByProvince } from '@/data/mock'
+import { cn, getProvinceCodeFromSlug } from '@/lib/utils'
+import { buildPageMetadata } from '@/lib/seo'
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { breadcrumbSchema, provincePlaceSchema } from '@/lib/schema'
 
 interface ProvincePageProps {
   params: { id: string }
@@ -41,6 +46,17 @@ export function generateStaticParams() {
     'western-cape', 'gauteng', 'kwazulu-natal', 'eastern-cape',
     'limpopo', 'mpumalanga', 'north-west', 'free-state', 'northern-cape',
   ].map((id) => ({ id }))
+}
+
+export function generateMetadata({ params }: ProvincePageProps): Metadata {
+  const province = getProvinceById(params.id)
+  if (!province) return {}
+  const description = PROVINCE_DESCRIPTIONS[province.id] ?? ''
+  return buildPageMetadata({
+    title: `${province.name} Province Statistics`,
+    description: `${description.slice(0, 155)}… Unemployment, education, housing, and population data for ${province.name}.`,
+    path: `/provinces/${params.id}`,
+  })
 }
 
 function StatRow({ label, value, sub, highlight }: { label: string; value: string; sub?: string; highlight?: 'good' | 'bad' | 'neutral' }) {
@@ -105,16 +121,29 @@ export default function ProvincePage({ params }: ProvincePageProps) {
   const prev = idx > 0 ? sorted[idx - 1] : sorted[sorted.length - 1]
   const next = idx < sorted.length - 1 ? sorted[idx + 1] : sorted[0]
 
+  const provinceCode = getProvinceCodeFromSlug(province.id)
+  const municipalities = provinceCode
+    ? [...getMunicipalitiesByProvince(provinceCode)]
+        .sort((a, b) => b.population2022 - a.population2022)
+        .slice(0, 8)
+    : []
+
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Provinces', path: '/provinces' },
+    { name: province.name, path: `/provinces/${province.id}` },
+  ]
+
   return (
     <div className="container-page py-10 space-y-8">
+      <JsonLd
+        data={[
+          breadcrumbSchema(breadcrumbs),
+          provincePlaceSchema(province.name, `/provinces/${province.id}`, description),
+        ]}
+      />
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-        <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
-        <span>/</span>
-        <Link href="/provinces" className="hover:text-brand-600 transition-colors">Provinces</Link>
-        <span>/</span>
-        <span className="text-slate-900 dark:text-white">{province.name}</span>
-      </div>
+      <Breadcrumbs items={breadcrumbs} />
 
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -257,6 +286,37 @@ export default function ProvincePage({ params }: ProvincePageProps) {
         </div>
         <p className="text-xs text-slate-400 mt-3">Source: Stats SA QLFS Q3 2025</p>
       </div>
+
+      {/* Municipalities in this province */}
+      {municipalities.length > 0 && (
+        <div className="card p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <h3 className="font-semibold text-slate-900 dark:text-white">
+              Municipalities in {province.name}
+            </h3>
+            <Link
+              href="/municipalities"
+              className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400"
+            >
+              View all municipalities →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {municipalities.map((m) => (
+              <Link
+                key={m.id}
+                href={`/municipalities/${m.id}`}
+                className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2.5 text-sm hover:border-brand-300 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50 transition-colors"
+              >
+                <span className="font-medium text-slate-800 dark:text-slate-200">{m.name}</span>
+                <span className="font-mono text-xs text-slate-400">
+                  {m.population2022.toLocaleString('en-ZA')}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Province navigation */}
       <div className="flex gap-4">

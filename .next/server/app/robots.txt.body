@@ -1,0 +1,6 @@
+User-Agent: *
+Allow: /
+Disallow: /dashboard?*
+
+Host: https://sadatahub.tech
+Sitemap: https://sadatahub.tech/sitemap.xml

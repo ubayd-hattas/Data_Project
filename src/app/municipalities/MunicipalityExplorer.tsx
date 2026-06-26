@@ -181,6 +181,7 @@ export default function MunicipalityExplorer({ municipalities }: Props) {
             <input
               type="text"
               placeholder="Search municipality name or code…"
+              aria-label="Search municipalities by name or code"
               value={query}
               onChange={(e) => { setQuery(e.target.value); setPage(1) }}
               className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm text-slate-700 placeholder-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:placeholder-slate-500"

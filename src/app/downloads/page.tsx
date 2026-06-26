@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { Download, RefreshCw, Clock, CheckCircle, AlertTriangle, AlertCircle, ExternalLink } from 'lucide-react'
 import { ExportButton, ProvincesExportButton } from '@/components/ui/ExportButton'
 import { CitationWidget } from '@/components/ui/CitationWidget'
@@ -12,6 +13,17 @@ import {
 } from '@/lib/registry'
 import { getProvinceData, getStatsByIds } from '@/data/mock'
 import { formatDate } from '@/lib/utils'
+import { buildPageMetadata } from '@/lib/seo'
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { breadcrumbSchema } from '@/lib/schema'
+
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Data Downloads',
+  description:
+    'Download South African public datasets as CSV files — unemployment, GDP, inflation, crime, education, census, and provincial data. Free, no sign-up required.',
+  path: '/downloads',
+})
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -175,9 +187,16 @@ export default function DownloadsPage() {
   const mostRecentUpdate = allLastUpdated[0]
   const totalStats = datasetRegistry.reduce((sum, e) => sum + getEntryStatCount(e), 0)
 
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Downloads', path: '/downloads' },
+  ]
+
   return (
     <div className="animate-fade-in py-8">
+      <JsonLd data={breadcrumbSchema(breadcrumbs)} />
       <div className="container-page">
+        <Breadcrumbs items={breadcrumbs} className="mb-6" />
 
         {/* Page header */}
         <div className="mb-8">

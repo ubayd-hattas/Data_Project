@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, Clock, Calendar, RefreshCw, BookOpen } from 'lucide-react'
 import { StatCallout } from '@/components/ui/StatCallout'
@@ -7,6 +8,10 @@ import { FreshnessIndicator } from '@/components/ui/FreshnessIndicator'
 import { getStoryBySlug, getRelatedStories, STORIES } from '@/data/stories'
 import { getStatById } from '@/data/mock'
 import { cn } from '@/lib/utils'
+import { buildPageMetadata, AUTHOR } from '@/lib/seo'
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 
 interface StoryPageProps {
   params: { slug: string }
@@ -16,13 +21,30 @@ export function generateStaticParams() {
   return STORIES.map((s) => ({ slug: s.slug }))
 }
 
-export function generateMetadata({ params }: StoryPageProps) {
+export function generateMetadata({ params }: StoryPageProps): Metadata {
   const story = getStoryBySlug(params.slug)
   if (!story) return {}
-  return {
-    title: `${story.title} — SA Data Hub Insights`,
+  return buildPageMetadata({
+    title: story.title,
     description: story.summary,
-  }
+    path: `/insights/${story.slug}`,
+    ogType: 'article',
+    publishedTime: story.publishedDate,
+    modifiedTime: story.lastUpdated,
+    authors: [AUTHOR.name],
+    tags: story.tags,
+  })
+}
+
+const STORY_CATEGORY_LINKS: Record<string, { href: string; label: string }> = {
+  unemployment: { href: '/category/unemployment', label: 'Unemployment data' },
+  economy: { href: '/category/gdp', label: 'GDP & economy data' },
+  inflation: { href: '/category/inflation', label: 'Inflation data' },
+  crime: { href: '/category/crime', label: 'Crime statistics' },
+  education: { href: '/category/education', label: 'Education data' },
+  population: { href: '/category/population', label: 'Population data' },
+  housing: { href: '/category/housing', label: 'Housing data' },
+  policy: { href: '/methodology', label: 'Methodology' },
 }
 
 const categoryColors: Record<string, string> = {
@@ -48,10 +70,20 @@ export default function StoryPage({ params }: StoryPageProps) {
 
   // Derive a fake DataSource for FreshnessIndicator from the first related stat
   const primarySource = relatedStats[0]?.source
+  const categoryLink = STORY_CATEGORY_LINKS[story.category]
+
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Insights', path: '/insights' },
+    { name: story.title, path: `/insights/${story.slug}` },
+  ]
 
   return (
     <div className="animate-fade-in py-8">
+      <JsonLd data={[breadcrumbSchema(breadcrumbs), articleSchema(story)]} />
       <div className="container-page">
+
+        <Breadcrumbs items={breadcrumbs} className="mb-6" />
 
         {/* Back */}
         <Link
@@ -85,6 +117,16 @@ export default function StoryPage({ params }: StoryPageProps) {
             </p>
 
             <div className="mt-5 flex flex-wrap items-center gap-4 text-xs text-slate-400">
+              <span>
+                By{' '}
+                <a
+                  href={AUTHOR.url}
+                  rel="author me"
+                  className="font-medium text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400"
+                >
+                  {AUTHOR.name}
+                </a>
+              </span>
               <span className="flex items-center gap-1.5">
                 <Calendar size={12} />
                 Published {new Date(story.publishedDate).toLocaleDateString('en-ZA', {
@@ -195,6 +237,16 @@ export default function StoryPage({ params }: StoryPageProps) {
                 </span>
               ))}
             </div>
+          )}
+
+          {/* Related dataset */}
+            {categoryLink && (
+            <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">
+              Explore the underlying data:{' '}
+              <Link href={categoryLink.href} className="font-medium text-brand-600 hover:underline dark:text-brand-400">
+                {categoryLink.label}
+              </Link>
+            </p>
           )}
 
           {/* Data freshness */}

@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { CategoryId } from '@/types'
+import { CategoryId, ProvinceCode } from '@/types'
 
 // ─── Class merging ────────────────────────────────────────────────────────────
 export function cn(...inputs: ClassValue[]) {
@@ -54,6 +54,29 @@ export function isGoodWhenDown(categoryId: CategoryId): boolean {
 }
 
 // ─── Province labels ──────────────────────────────────────────────────────────
+/** Maps Stats SA province codes to URL slugs used in /provinces/[id]. */
+export const provinceCodeToSlug: Record<ProvinceCode, string> = {
+  EC: 'eastern-cape',
+  FS: 'free-state',
+  GP: 'gauteng',
+  KZN: 'kwazulu-natal',
+  LP: 'limpopo',
+  MP: 'mpumalanga',
+  NC: 'northern-cape',
+  NW: 'north-west',
+  WC: 'western-cape',
+}
+
+export function getProvinceSlugFromCode(code: ProvinceCode): string {
+  return provinceCodeToSlug[code]
+}
+
+/** Reverse lookup: URL slug → Stats SA province code. */
+export function getProvinceCodeFromSlug(slug: string): ProvinceCode | undefined {
+  const entry = Object.entries(provinceCodeToSlug).find(([, s]) => s === slug)
+  return entry ? (entry[0] as ProvinceCode) : undefined
+}
+
 export const provinceLabels: Record<string, string> = {
   all: 'All Provinces',
   gauteng: 'Gauteng',

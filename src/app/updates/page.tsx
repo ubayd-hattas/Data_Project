@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { ReactNode } from 'react'
 import { Clock3, ExternalLink, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react'
 import { formatDate, formatRelativeDate } from '@/lib/utils'
@@ -9,6 +10,17 @@ import {
   UpdateLogEntry,
 } from '@/lib/registry'
 import { UPDATE_HISTORY, UpdateHistoryType } from '@/data/update-history'
+import { buildPageMetadata } from '@/lib/seo'
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { breadcrumbSchema } from '@/lib/schema'
+
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Dataset Updates',
+  description:
+    'Track when South African public datasets were last updated on SA Data Hub. Freshness status, update history, and links to official sources.',
+  path: '/updates',
+})
 
 function statusBadge(status: DatasetStatus): { label: string; className: string; icon: ReactNode } {
   if (status === 'up-to-date') {
@@ -100,9 +112,16 @@ export default function UpdatesPage() {
   const latest = updates[0]?.lastUpdated
   const history = [...UPDATE_HISTORY].sort((a, b) => b.date.localeCompare(a.date))
 
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Updates', path: '/updates' },
+  ]
+
   return (
     <div className="animate-fade-in py-8">
+      <JsonLd data={breadcrumbSchema(breadcrumbs)} />
       <div className="container-page">
+        <Breadcrumbs items={breadcrumbs} className="mb-6" />
         <div className="mb-8">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 dark:bg-brand-950/40">

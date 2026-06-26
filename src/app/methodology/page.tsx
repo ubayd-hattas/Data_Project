@@ -1,8 +1,20 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import {
   Database, RefreshCw, BookOpen, Shield, AlertTriangle,
   ExternalLink, CheckCircle, Clock, FileText, Globe,
 } from 'lucide-react'
+import { buildPageMetadata, AUTHOR } from '@/lib/seo'
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { breadcrumbSchema } from '@/lib/schema'
+
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Data Methodology',
+  description:
+    'How SA Data Hub sources, processes, and presents South African statistics. Official data providers, indicator definitions, update schedules, and known limitations.',
+  path: '/methodology',
+})
 
 interface Source {
   name: string
@@ -155,14 +167,15 @@ function SectionIcon({ icon: Icon }: { icon: React.ElementType }) {
 }
 
 export default function MethodologyPage() {
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Methodology', path: '/methodology' },
+  ]
+
   return (
     <div className="container-page py-10 max-w-4xl">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6">
-        <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
-        <span>/</span>
-        <span>Methodology</span>
-      </div>
+      <JsonLd data={breadcrumbSchema(breadcrumbs)} />
+      <Breadcrumbs items={breadcrumbs} className="mb-6" />
 
       {/* Header */}
       <div className="mb-10">
@@ -373,6 +386,18 @@ export default function MethodologyPage() {
           </p>
         </div>
       </section>
+
+      <p className="mt-10 text-sm text-slate-500 dark:text-slate-400">
+        SA Data Hub is maintained by{' '}
+        <a href={AUTHOR.url} rel="me author" className="text-brand-600 hover:underline dark:text-brand-400">
+          {AUTHOR.name}
+        </a>
+        . See the{' '}
+        <Link href="/about" className="text-brand-600 hover:underline dark:text-brand-400">
+          About page
+        </Link>{' '}
+        for project background and the update process.
+      </p>
     </div>
   )
 }

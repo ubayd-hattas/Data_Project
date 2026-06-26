@@ -58,6 +58,7 @@ export function SearchBar({
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
+        aria-label={placeholder}
         className={cn(
           'w-full rounded-xl border border-slate-200 bg-white font-sans text-slate-900 placeholder-slate-400 shadow-sm outline-none',
           'transition-all focus:border-brand-400 focus:ring-2 focus:ring-brand-100',

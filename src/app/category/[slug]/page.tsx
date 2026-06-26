@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   Briefcase, TrendingUp, ShoppingCart, Shield,
@@ -23,6 +24,12 @@ import {
 } from '@/lib/registry'
 import { generateInsight, generateCategoryInsight } from '@/lib/insights'
 import { formatDate } from '@/lib/utils'
+import { buildPageMetadata } from '@/lib/seo'
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { breadcrumbSchema, datasetSchema } from '@/lib/schema'
+import { STORIES } from '@/data/stories'
+import { StoryCard } from '@/components/ui/StoryCard'
 
 const iconMap: Record<string, LucideIcon> = {
   Briefcase, TrendingUp, ShoppingCart, Shield,
@@ -59,6 +66,26 @@ export function generateStaticParams() {
   ].map((slug) => ({ slug }))
 }
 
+const STORY_CATEGORY_MAP: Record<string, string> = {
+  unemployment: 'unemployment',
+  economy: 'gdp',
+  inflation: 'inflation',
+  crime: 'crime',
+  education: 'education',
+  population: 'population',
+  housing: 'housing',
+}
+
+export function generateMetadata({ params }: CategoryPageProps): Metadata {
+  const category = getCategoryById(params.slug)
+  if (!category) return {}
+  return buildPageMetadata({
+    title: `${category.label} Statistics`,
+    description: `${category.description} View charts, trends, citations, and CSV downloads from official South African sources.`,
+    path: `/category/${params.slug}`,
+  })
+}
+
 export default function CategoryPage({ params }: CategoryPageProps) {
   const category = getCategoryById(params.slug)
   if (!category) notFound()
@@ -81,9 +108,29 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   // Use first stat's source for the freshness indicator (most representative)
   const primaryStat = stats[0]
 
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Dashboard', path: '/dashboard' },
+    { name: category.label, path: `/category/${params.slug}` },
+  ]
+
+  const relatedStories = STORIES.filter(
+    (s) => STORY_CATEGORY_MAP[s.category] === params.slug
+  ).slice(0, 2)
+
+  const schemaBlocks = [
+    breadcrumbSchema(breadcrumbs),
+    ...(registryEntries[0]
+      ? [datasetSchema(registryEntries[0], `/category/${params.slug}`)]
+      : []),
+  ]
+
   return (
     <div className="animate-fade-in py-8">
+      <JsonLd data={schemaBlocks} />
       <div className="container-page">
+
+        <Breadcrumbs items={breadcrumbs} className="mb-6" />
 
         {/* Back */}
         <Link
@@ -281,6 +328,29 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             ))}
           </div>
         </div>
+
+        {/* Related stories */}
+        {relatedStories.length > 0 && (
+          <div className="mt-10 border-t border-slate-200 pt-8 dark:border-slate-700">
+            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-400">
+              Related insights
+            </h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {relatedStories.map((story) => (
+                <StoryCard key={story.slug} story={story} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {params.slug === 'census' && (
+          <p className="mt-8 text-sm text-slate-500 dark:text-slate-400">
+            Municipal-level Census 2022 profiles:{' '}
+            <Link href="/municipalities" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
+              Browse all 213 municipalities
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   )

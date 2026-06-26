@@ -1,6 +1,8 @@
 
 import Link from 'next/link'
 import { BarChart3, ExternalLink } from 'lucide-react'
+import { categories } from '@/data/mock'
+import { AUTHOR } from '@/lib/seo'
 
 export function Footer() {
   return (
@@ -31,22 +33,20 @@ export function Footer() {
           <div>
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Categories</h3>
             <ul className="space-y-2 text-sm">
-              {['Unemployment', 'GDP & Economy', 'Inflation', 'Crime', 'Education', 'Population', 'Housing', 'Census 2022'].map(
-                (label) => (
-                  <li key={label}>
-                    <Link
-                      href={`/category/${label.toLowerCase().replace(/[^a-z]/g, '-').replace(/-+/g, '-').replace(/-$/, '')}`}
-                      className="text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400"
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                )
-              )}
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <Link
+                    href={`/category/${category.id}`}
+                    className="text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400"
+                  >
+                    {category.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Sources */}
+          {/* Platform */}
           <div>
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Platform</h3>
             <ul className="space-y-2 text-sm mb-6">
@@ -55,9 +55,10 @@ export function Footer() {
                 { label: 'Data Downloads', href: '/downloads' },
                 { label: 'Dataset Updates', href: '/updates' },
                 { label: 'Province Explorer', href: '/provinces' },
+                { label: 'Municipalities', href: '/municipalities' },
                 { label: 'Dashboard', href: '/dashboard' },
                 { label: 'Methodology', href: '/methodology' },
-                // Add Changelog link to Platform navigation
+                { label: 'About', href: '/about' },
                 { label: 'Changelog', href: '/changelog' },
               ].map(({ label, href }) => (
                 <li key={label}>
@@ -97,11 +98,26 @@ export function Footer() {
             © {new Date().getFullYear()} SA Data Hub. Open source and not for profit.
           </p>
           <p className="text-xs text-slate-400">
-            Built by Ubayd Hattas · Data from official South African sources
+            Built by{' '}
+            <a
+              href={AUTHOR.url}
+              rel="me author"
+              className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+            >
+              {AUTHOR.name}
+            </a>
+            {' · '}
+            <a
+              href={AUTHOR.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+            >
+              Source on GitHub
+            </a>
           </p>
         </div>
       </div>
     </footer>
   )
 }
-

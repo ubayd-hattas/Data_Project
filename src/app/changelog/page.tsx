@@ -1,14 +1,32 @@
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getChangelog } from '@/lib/changelog'
 import { formatDate } from '@/lib/utils'
+import { buildPageMetadata } from '@/lib/seo'
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { breadcrumbSchema } from '@/lib/schema'
+
+export const metadata: Metadata = buildPageMetadata({
+  title: 'Platform Changelog',
+  description:
+    'Version history and release notes for SA Data Hub — new features, data additions, and platform improvements.',
+  path: '/changelog',
+})
 
 export default function ChangelogPage() {
   const changelog = getChangelog()
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Changelog', path: '/changelog' },
+  ]
 
   return (
     <div className="animate-fade-in py-8">
+      <JsonLd data={breadcrumbSchema(breadcrumbs)} />
       <div className="container-page">
+        <Breadcrumbs items={breadcrumbs} className="mb-6" />
         {/* Platform Transparency */}
         <section className="mb-12">
           <h1 className="heading-display text-3xl font-semibold mb-4">Platform Changelog</h1>

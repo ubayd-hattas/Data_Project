@@ -1,9 +1,18 @@
 import Link from 'next/link'
 import { ArrowRight, Database, RefreshCw, Shield } from 'lucide-react'
+import type { Metadata } from 'next'
 import { SearchBar } from '@/components/ui/SearchBar'
 import { StatCard } from '@/components/ui/StatCard'
 import { CategoryCard } from '@/components/ui/CategoryCard'
 import { getFeaturedStats, categories } from '@/data/mock'
+import { buildPageMetadata } from '@/lib/seo'
+
+export const metadata: Metadata = buildPageMetadata({
+  title: 'South African Public Data',
+  description:
+    'Explore South African public data — unemployment, GDP, inflation, crime, education, population, housing, and census statistics from Stats SA and official government sources.',
+  path: '/',
+})
 
 export default function HomePage() {
   const featuredStats = getFeaturedStats()

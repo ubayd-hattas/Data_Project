@@ -14,6 +14,13 @@ import type { MunicipalityRecord } from '@/types'
 import { AgeStructureChart } from '@/components/charts/AgeStructureChart'
 import { HousingCompositionChart } from '@/components/charts/HousingCompositionChart'
 import { BasicServicesChart } from '@/components/charts/BasicServicesChart'
+import type { Metadata } from 'next'
+import { buildPageMetadata } from '@/lib/seo'
+import { generateMunicipalityIntro } from '@/lib/municipality-copy'
+import { Breadcrumbs } from '@/components/seo/Breadcrumbs'
+import { JsonLd } from '@/components/seo/JsonLd'
+import { breadcrumbSchema, placeSchema } from '@/lib/schema'
+import { getProvinceSlugFromCode } from '@/lib/utils'
 
 // ─── Static params ──────────────────────────────────────────────────────────
 
@@ -27,18 +34,15 @@ export async function generateMetadata({
   params,
 }: {
   params: { code: string }
-}) {
+}): Promise<Metadata> {
   const m = getMunicipalityByCode(params.code)
   if (!m) return {}
-  return {
-    title: `${m.name} Municipality | SA Data Hub`,
-    description: `Population, housing, services and demographic profile for ${m.name} from Census 2022.`,
-    openGraph: {
-      title: `${m.name} Municipality | SA Data Hub`,
-      description: `Population, housing, services and demographic profile for ${m.name} from Census 2022.`,
-      type: 'website',
-    },
-  }
+  const intro = generateMunicipalityIntro(m)
+  return buildPageMetadata({
+    title: `${m.name} Municipality — Census 2022 Profile`,
+    description: intro.length > 160 ? `${intro.slice(0, 157)}…` : intro,
+    path: `/municipalities/${m.id}`,
+  })
 }
 
 // ─── Formatting helpers ─────────────────────────────────────────────────────
@@ -721,24 +725,26 @@ export default function MunicipalityDetailPage({
   const m = getMunicipalityByCode(params.code)
   if (!m) notFound()
 
+  const intro = generateMunicipalityIntro(m)
+  const provinceSlug = getProvinceSlugFromCode(m.province)
+
+  const breadcrumbs = [
+    { name: 'Home', path: '/' },
+    { name: 'Municipalities', path: '/municipalities' },
+    { name: m.name, path: `/municipalities/${m.id}` },
+  ]
+
   return (
     <div className="container-page py-10 space-y-10">
+      <JsonLd
+        data={[
+          breadcrumbSchema(breadcrumbs),
+          placeSchema(m, `/municipalities/${m.id}`),
+        ]}
+      />
       {/* Breadcrumb */}
       <div>
-        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-3">
-          <Link href="/" className="hover:text-brand-600 transition-colors">
-            Home
-          </Link>
-          <span>/</span>
-          <Link
-            href="/municipalities"
-            className="hover:text-brand-600 transition-colors"
-          >
-            Municipalities
-          </Link>
-          <span>/</span>
-          <span>{m.name}</span>
-        </div>
+        <Breadcrumbs items={breadcrumbs} className="mb-3" />
 
         {/* Header */}
         <div className="flex flex-wrap items-start gap-3 mb-1">
@@ -747,11 +753,19 @@ export default function MunicipalityDetailPage({
           </h1>
           <CategoryBadge category={m.category} />
         </div>
-        <p className="text-slate-500 dark:text-slate-400 text-sm">
-          {m.provinceName}
+        <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">
+          <Link
+            href={`/provinces/${provinceSlug}`}
+            className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+          >
+            {m.provinceName}
+          </Link>
           {m.miifCategory ? ` · MIIF ${m.miifCategory}` : ''}
           {' · '}
           <span className="font-mono text-xs">{m.id}</span>
+        </p>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
+          {intro}
         </p>
       </div>
 
