@@ -110,7 +110,7 @@ export default function AboutPage() {
           >
             {AUTHOR.name}
           </a>
-          , a software engineer focused on public data tools and civic technology. The project is open source
+          , a Computer Science, Statistics and Data Science student at UCT focused on public data tools and civic technology. The project is open source
           and maintained in the maintainer&apos;s spare time.
         </p>
         <div className="flex flex-wrap gap-4 text-sm">
